@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,12 +9,7 @@ import engine.Cooldown;
 import engine.Core;
 import engine.GameSettings;
 import engine.GameState;
-import entity.Bullet;
-import entity.BulletPool;
-import entity.EnemyShip;
-import entity.EnemyShipFormation;
-import entity.Entity;
-import entity.Ship;
+import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
@@ -71,6 +67,9 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
+	private Item item = new Item();
+
+	private boolean isGhostOn = false;
 	/**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -272,7 +271,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -289,6 +288,21 @@ public class GameScreen extends Screen {
 						this.shipsDestroyed++;
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
+						item.itemActivate();
+						if(item.isGhostAction) {
+							isGhostOn = true;
+							this.ship.setColor(Color.DARK_GRAY);
+							new Thread(() -> {
+								try {
+									Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+									isGhostOn = false;
+									this.ship.setColor(Color.GREEN);
+									item.setIsGhostActive();
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
+						}
 					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
