@@ -73,7 +73,7 @@ public class Ship extends Entity {
 	 * @return Checks if the bullet was shot correctly.
 	 */
 	public final boolean shoot(final Set<Bullet> bullets, boolean isMultiShotOn) {
-		if (this.shootingCooldown.checkFinished()) {
+		if (this.shootingCooldown.checkFinished() && !isMultiShotOn) {
 			this.shootingCooldown.reset();
 			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
 					positionY, BULLET_SPEED));
