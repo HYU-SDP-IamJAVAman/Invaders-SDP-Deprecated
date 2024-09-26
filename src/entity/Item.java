@@ -22,6 +22,7 @@ public class Item {
                     break;
                 case 3:
                     isLineBombActivated = true;
+                    break;
                 case 4:
                     isGhostAction = true;
                     break;
