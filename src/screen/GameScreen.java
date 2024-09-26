@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +72,8 @@ public class GameScreen extends Screen {
 
 	private Item item = new Item();
 
-    /**
+	private boolean isGhostOn = false;
+	/**
 	 * Constructor, establishes the properties of the screen.
 	 * 
 	 * @param gameState
@@ -278,7 +280,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -291,23 +293,44 @@ public class GameScreen extends Screen {
 				int destroyVerticalValue = -1;
 				int destroyShipHorizonalValue = -1;
 				for(int i=0 ; i<enemyShips.size(); i++){
-					for(int j=0 ; j< enemyShips.get(i).size(); j++){
-						EnemyShip enemyShip = enemyShips.get(i).get(j);
-						if (!enemyShip.isDestroyed()
+					for(int j=0 ; j< enemyShips.get(i).size(); j++) {
+
+                        EnemyShip enemyShip = enemyShips.get(i).get(j);
+
+                        if (!enemyShip.isDestroyed()
 								&& checkCollision(bullet, enemyShip)) {
 							this.score += enemyShip.getPointValue();
 							this.shipsDestroyed++;
 							this.enemyShipFormation.destroy(enemyShip);
-							destroyVerticalValue = i;
+
+                            destroyVerticalValue = i;
 							destroyShipHorizonalValue = j;
 							recyclable.add(bullet);
-							item.itemActivate();
-							if (item.isLineBombActivated){
+
+                            item.itemActivate();
+
+                            if (item.isLineBombActivated){
 								operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
 							}
-					}
+
+                            if (item.isGhostAction) {
+                                isGhostOn = true;
+                                this.ship.setColor(Color.DARK_GRAY);
+                                new Thread(() -> {
+                                    try {
+                                        Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+                                        isGhostOn = false;
+                                        this.ship.setColor(Color.GREEN);
+                                        item.setIsGhostActive();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }).start();
+                            }
+					    }
+				    }
 				}
-				}
+
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
