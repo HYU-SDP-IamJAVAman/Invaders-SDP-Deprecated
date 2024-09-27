@@ -294,6 +294,18 @@ public class GameScreen extends Screen {
                             }
                         }
                     }
+
+					for (List<EnemyShip> ships : enemyShips) {
+						for (int j = 0; j < ships.size(); j++) {
+							EnemyShip enemyShip = ships.get(j);
+							if (j == destroyLine) {
+								this.score += enemyShip.getPointValue();
+								this.shipsDestroyed++;
+								this.enemyShipFormation.destroy(enemyShip);
+								recyclable.add(bullet);
+							}
+						}
+					}
 				}
 				else{
 					for (EnemyShip enemyShip : this.enemyShipFormation) {
