@@ -8,12 +8,7 @@ import engine.Cooldown;
 import engine.Core;
 import engine.GameSettings;
 import engine.GameState;
-import entity.Bullet;
-import entity.BulletPool;
-import entity.EnemyShip;
-import entity.EnemyShipFormation;
-import entity.Entity;
-import entity.Ship;
+import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
@@ -70,6 +65,10 @@ public class GameScreen extends Screen {
 	private boolean levelFinished;
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
+
+	private Item item = new Item();
+
+	private boolean isMultiShotOn = false;
 
 	/**
 	 * Constructor, establishes the properties of the screen.
@@ -167,8 +166,12 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets))
-						this.bulletsShot++;
+					if (this.ship.shoot(this.bullets, isMultiShotOn))
+						if (isMultiShotOn) {
+							this.bulletsShot += 2;
+						} else {
+							this.bulletsShot++;
+						}
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -203,6 +206,7 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
+			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -289,6 +293,10 @@ public class GameScreen extends Screen {
 						this.shipsDestroyed++;
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
+						item.itemActivate();
+						if (item.isMultiShotActivated) {
+							isMultiShotOn = true;
+						}
 					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()

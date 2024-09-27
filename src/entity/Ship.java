@@ -66,11 +66,25 @@ public class Ship extends Entity {
 	 *            List of bullets on screen, to add the new bullet.
 	 * @return Checks if the bullet was shot correctly.
 	 */
-	public final boolean shoot(final Set<Bullet> bullets) {
-		if (this.shootingCooldown.checkFinished()) {
+	public final boolean shoot(final Set<Bullet> bullets, boolean isMultiShotOn) {
+		if (this.shootingCooldown.checkFinished() && !isMultiShotOn) {
 			this.shootingCooldown.reset();
 			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
 					positionY, BULLET_SPEED));
+			return true;
+		} else if(this.shootingCooldown.checkFinished() && isMultiShotOn) {
+			this.shootingCooldown.reset();
+			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+					positionY, BULLET_SPEED));
+			new Thread(() -> {
+				try {
+					Thread.sleep(200);  // 200ms 지연 후 발사
+					bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+							positionY, BULLET_SPEED));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			return true;
 		}
 		return false;
