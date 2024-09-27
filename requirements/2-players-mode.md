@@ -20,14 +20,12 @@ Hello
 - Screen split
 - Modify Game Logic
 - Display Scores and Lives
+- Split sound channel
 - Network Play (Optional)
 
 
 ## Detailed Requirements
 
-- Add Player
-  - Add a character and controls for the second player.
-  - Add variables to manage each player's position, score, lives, etc.
 - Control Settings
   - Differentiate controls for the first and second players.
   - For example, the first player can use arrow keys, and the second player can use WASD keys.
@@ -37,9 +35,9 @@ Hello
 - Modify Game Logic
   - Adjust game over conditions, victory conditions, etc., to accommodate two players.
   - For example, the game should be over when both players run out of lives.
-- Display Scores and Lives:
-  - Display each player's score and lives on the screen.
-  - This allows both players to easily check their status.
+- Split sound channel
+  - Split sound channel to Left and Right
+  - This allows for simultaneous sounding effects to be processed.
 - Network Play (Optional):
   - Allow remote play over a network, not just local play.
   - Implement server-client communication for this purpose.
