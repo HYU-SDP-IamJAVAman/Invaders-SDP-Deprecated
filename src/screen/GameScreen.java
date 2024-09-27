@@ -285,27 +285,29 @@ public class GameScreen extends Screen {
 				if(Math.random() >= 0.5){
 					int destroyLine = -1;
 					List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
-                    for (List<EnemyShip> ships : enemyShips) {
-                        for (int j = 0; j < ships.size(); j++) {
-                            EnemyShip enemyShip = ships.get(j);
+                    for (int i=0 ; i<enemyShips.size() ;i++) {
+                        for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                            EnemyShip enemyShip = enemyShips.get(i).get(j);
                             if (!enemyShip.isDestroyed()
                                     && checkCollision(bullet, enemyShip)) {
-                                destroyLine = j;
+                                destroyLine = i;
                             }
                         }
                     }
 
-					for (List<EnemyShip> ships : enemyShips) {
-						for (int j = 0; j < ships.size(); j++) {
-							EnemyShip enemyShip = ships.get(j);
-							if (j == destroyLine) {
+					for(int i=0 ; i<enemyShips.size() ;i++){
+						for(int j=0 ; j<enemyShips.get(i).size(); j++){
+							EnemyShip enemyShip = enemyShips.get(i).get(j);
+							if(i == destroyLine){
+								this.enemyShipFormation.destroy(enemyShip);
 								this.score += enemyShip.getPointValue();
 								this.shipsDestroyed++;
-								this.enemyShipFormation.destroy(enemyShip);
 								recyclable.add(bullet);
 							}
 						}
 					}
+
+
 				}
 				else{
 					for (EnemyShip enemyShip : this.enemyShipFormation) {
