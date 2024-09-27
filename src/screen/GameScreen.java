@@ -2,6 +2,7 @@ package screen;
 
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import engine.*;
@@ -281,14 +282,30 @@ public class GameScreen extends Screen {
 					}
 				}
 			} else {
-				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
-							&& checkCollision(bullet, enemyShip)) {
-						this.score += enemyShip.getPointValue();
-						this.shipsDestroyed++;
-						this.enemyShipFormation.destroy(enemyShip);
-						recyclable.add(bullet);
+				if(Math.random() >= 0.5){
+					int destroyLine = -1;
+					List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
+                    for (List<EnemyShip> ships : enemyShips) {
+                        for (int j = 0; j < ships.size(); j++) {
+                            EnemyShip enemyShip = ships.get(j);
+                            if (!enemyShip.isDestroyed()
+                                    && checkCollision(bullet, enemyShip)) {
+                                destroyLine = j;
+                            }
+                        }
+                    }
+				}
+				else{
+					for (EnemyShip enemyShip : this.enemyShipFormation) {
+						if (!enemyShip.isDestroyed()
+								&& checkCollision(bullet, enemyShip)) {
+							this.score += enemyShip.getPointValue();
+							this.shipsDestroyed++;
+							this.enemyShipFormation.destroy(enemyShip);
+							recyclable.add(bullet);
+						}
 					}
+				}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
