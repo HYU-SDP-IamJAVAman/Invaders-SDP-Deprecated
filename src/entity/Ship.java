@@ -76,15 +76,8 @@ public class Ship extends Entity {
 			this.shootingCooldown.reset();
 			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
 					positionY, BULLET_SPEED));
-			new Thread(() -> {
-				try {
-					Thread.sleep(200);  // 200ms 지연 후 발사
-					bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-							positionY, BULLET_SPEED));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}).start();
+			bullets.add(BulletPool.getBullet(positionX,
+					positionY, BULLET_SPEED));
 			return true;
 		}
 		return false;

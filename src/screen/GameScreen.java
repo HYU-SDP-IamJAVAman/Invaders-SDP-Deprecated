@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,8 +69,9 @@ public class GameScreen extends Screen {
 
 	private Item item = new Item();
 
-	private boolean isMultiShotOn = false;
+	private boolean isGhostOn = false;
 
+	private boolean isMultiShotOn = false;
 	/**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -276,7 +278,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -294,10 +296,24 @@ public class GameScreen extends Screen {
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
 						item.itemActivate();
-						if (item.isMultiShotActivated) {
+						if (item.isGhostAction) {
+							isGhostOn = true;
+							this.ship.setColor(Color.DARK_GRAY);
+							new Thread(() -> {
+								try {
+									Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+									isGhostOn = false;
+									this.ship.setColor(Color.GREEN);
+									item.setIsGhostActive();
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
+						} else if (item.isMultiShotActivated) {
 							isMultiShotOn = true;
 						}
 					}
+
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
