@@ -70,6 +70,8 @@ public class GameScreen extends Screen {
 	private Item item = new Item();
 
 	private boolean isGhostOn = false;
+
+	private boolean isMultiShotOn = false;
 	/**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -77,7 +79,7 @@ public class GameScreen extends Screen {
 	 *            Current game state.
 	 * @param gameSettings
 	 *            Current game settings.
-	 * @param bonnusLife
+	 * @param bonusLife
 	 *            Checks if a bonus life is awarded this level.
 	 * @param width
 	 *            Screen width.
@@ -166,8 +168,12 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets))
-						this.bulletsShot++;
+					if (this.ship.shoot(this.bullets, isMultiShotOn))
+						if (isMultiShotOn) {
+							this.bulletsShot += 2;
+						} else {
+							this.bulletsShot++;
+						}
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -202,6 +208,7 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
+			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -289,7 +296,7 @@ public class GameScreen extends Screen {
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
 						item.itemActivate();
-						if(item.isGhostAction) {
+						if (item.isGhostAction) {
 							isGhostOn = true;
 							this.ship.setColor(Color.DARK_GRAY);
 							new Thread(() -> {
@@ -302,8 +309,11 @@ public class GameScreen extends Screen {
 									e.printStackTrace();
 								}
 							}).start();
+						} else if (item.isMultiShotActivated) {
+							isMultiShotOn = true;
 						}
 					}
+
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {

@@ -68,7 +68,9 @@ public final class FileManager {
 	public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap)
 			throws IOException {
 		InputStream inputStream = null;
-
+		/**--1-- 첫번째 변경점
+		 * res파일을 못찾는 것 같아서 res파일을 리소스파일로 만들어줌
+		 */
 		try {
 			inputStream = DrawManager.class.getClassLoader()
 					.getResourceAsStream("graphics");
@@ -116,6 +118,10 @@ public final class FileManager {
 
 		try {
 			// Font loading.
+			/**--2-- 두번째 변경점
+			 * 1. res파일을 못찾는 것 같아서 res파일을 리소스파일로 만들어줌
+			 * 2. font파일이 없어서 github에 있는 폰트 다운 및 res파일에 넣고 경로 설정 해줌
+			 */
 			inputStream = FileManager.class.getClassLoader()
 					.getResourceAsStream("space_invaders.ttf");
 			font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(
