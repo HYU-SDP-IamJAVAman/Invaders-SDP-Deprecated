@@ -16,6 +16,7 @@ public class Item {
         this.isBarrierActivated = false;
     }
 
+
     public void itemActivate() {
             Random random = new Random();
             int randomMethodIndex = random.nextInt(6);

@@ -31,6 +31,8 @@ public class Ship extends Entity {
 	/** Singleton instance of SoundManager */
 	private final SoundManager soundManager = SoundManager.getInstance();
 
+	private int shotNum = 1;
+
 	/**
 	 * Constructor, establishes the ship's properties.
 	 * 
@@ -72,26 +74,28 @@ public class Ship extends Entity {
 	 *            List of bullets on screen, to add the new bullet.
 	 * @return Checks if the bullet was shot correctly.
 	 */
-	public final boolean shoot(final Set<Bullet> bullets, boolean isMultiShotOn) {
-		if (this.shootingCooldown.checkFinished() && !isMultiShotOn) {
+	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
+		if (this.shootingCooldown.checkFinished() && shotNum == 1) {
 			this.shootingCooldown.reset();
 			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
 					positionY, BULLET_SPEED));
 			soundManager.playSound(Sound.PLAYER_LASER);
 			return true;
-		} else if(this.shootingCooldown.checkFinished() && isMultiShotOn) {
+		} else if(this.shootingCooldown.checkFinished() && shotNum == 2) {
 			this.shootingCooldown.reset();
+			bullets.add(BulletPool.getBullet(positionX + this.width,
+					positionY, BULLET_SPEED));
+			bullets.add(BulletPool.getBullet(positionX,
+					positionY, BULLET_SPEED));
+			return true;
+		} else if(this.shootingCooldown.checkFinished() && shotNum == 3) {
+			this.shootingCooldown.reset();
+			bullets.add(BulletPool.getBullet(positionX + this.width,
+					positionY, BULLET_SPEED));
+			bullets.add(BulletPool.getBullet(positionX,
+					positionY, BULLET_SPEED));
 			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
 					positionY, BULLET_SPEED));
-			new Thread(() -> {
-				try {
-					Thread.sleep(200);  // 200ms 지연 후 발사
-					bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-							positionY, BULLET_SPEED));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}).start();
 			return true;
 		}
 		return false;

@@ -73,11 +73,11 @@ public class GameScreen extends Screen {
 
 	private boolean isGhostOn = false;
 
-	private boolean isMultiShotOn = false;
-
 	private Set<Barrier> barriers;
 
 	private Item item;
+
+    private int shotNum = 1;
 
     /**
 	 * Constructor, establishes the properties of the screen.
@@ -183,12 +183,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, isMultiShotOn))
-						if (isMultiShotOn) {
-							this.bulletsShot += 2;
-						} else {
-							this.bulletsShot++;
-						}
+					if (this.ship.shoot(this.bullets, shotNum))
+						this.bulletsShot += shotNum;
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -223,7 +219,6 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
-			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -353,8 +348,9 @@ public class GameScreen extends Screen {
 											e.printStackTrace();
 										}
 									}).start();
-								} else if (item.isMultiShotActivated) {
-									isMultiShotOn = true;
+								} else if (item.isMultiShotActivated && !(shotNum == 3)) {
+									this.shotNum++;
+                                    item.isMultiShotActivated = false;
 								}
 								else if (item.isLineBombActivated){
 									operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
