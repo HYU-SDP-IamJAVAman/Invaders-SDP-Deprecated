@@ -9,12 +9,7 @@ import engine.Cooldown;
 import engine.Core;
 import engine.GameSettings;
 import engine.GameState;
-import entity.Bullet;
-import entity.BulletPool;
-import entity.EnemyShip;
-import entity.EnemyShipFormation;
-import entity.Entity;
-import entity.Ship;
+import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
@@ -72,7 +67,11 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	/**
+	private List<List<EnemyShip>> enemyShips;
+
+	private Item item = new Item();
+
+    /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
 	 * @param gameState
@@ -121,6 +120,8 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+
+		enemyShips = this.enemyShipFormation.getEnemyShips();
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -283,43 +284,25 @@ public class GameScreen extends Screen {
 					}
 				}
 			} else {
-				if(Math.random() >= 0.5){
-					int destroyLine = -1;
-					List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
-                    for (int i=0 ; i<enemyShips.size() ;i++) {
-                        for (int j = 0; j < enemyShips.get(i).size(); j++) {
-                            EnemyShip enemyShip = enemyShips.get(i).get(j);
-                            if (!enemyShip.isDestroyed()
-                                    && checkCollision(bullet, enemyShip)) {
-                                destroyLine = i;
-                            }
-                        }
-                    }
-
-					for(int i=0 ; i<enemyShips.size() ;i++){
-						for(int j=0 ; j<enemyShips.get(i).size(); j++){
-							EnemyShip enemyShip = enemyShips.get(i).get(j);
-							if(i == destroyLine){
-								this.enemyShipFormation.destroy(enemyShip);
-								this.score += enemyShip.getPointValue();
-								this.shipsDestroyed++;
-								recyclable.add(bullet);
-							}
-						}
-					}
-
-
-				}
-				else{
-					for (EnemyShip enemyShip : this.enemyShipFormation) {
+				int destroyVerticalValue = -1;
+				int destroyShipHorizonalValue = -1;
+				for(int i=0 ; i<enemyShips.size(); i++){
+					for(int j=0 ; j< enemyShips.get(i).size(); j++){
+						EnemyShip enemyShip = enemyShips.get(i).get(j);
 						if (!enemyShip.isDestroyed()
 								&& checkCollision(bullet, enemyShip)) {
 							this.score += enemyShip.getPointValue();
 							this.shipsDestroyed++;
 							this.enemyShipFormation.destroy(enemyShip);
+							destroyVerticalValue = i;
+							destroyShipHorizonalValue = j;
 							recyclable.add(bullet);
-						}
+							item.itemActivate();
+							if (item.isLineBombActivated){
+								operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+							}
 					}
+				}
 				}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
@@ -333,6 +316,21 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
+	}
+
+	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
+		            for(int i=0 ; i<enemyShips.size() ;i++){
+						if(i != column) continue;
+						for(int j=0 ; j<enemyShips.get(i).size(); j++){
+							if(j == row) continue;
+							enemyShip = enemyShips.get(i).get(j);
+								this.enemyShipFormation.destroy(enemyShip);
+								this.score += enemyShip.getPointValue();
+								this.shipsDestroyed++;
+								recyclable.add(bullet);
+						}
+					}
+		System.out.println("OperatingLineBomb!");
 	}
 
 	/**
