@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,6 +70,8 @@ public class GameScreen extends Screen {
 	private Item item = new Item();
 
 	private boolean isMultiShotOn = false;
+
+	private int shotNum = 1;
 
 	/**
 	 * Constructor, establishes the properties of the screen.
@@ -166,12 +169,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, isMultiShotOn))
-						if (isMultiShotOn) {
-							this.bulletsShot += 2;
-						} else {
-							this.bulletsShot++;
-						}
+					if (this.ship.shoot(this.bullets, shotNum))
+						this.bulletsShot += shotNum;
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -294,8 +293,9 @@ public class GameScreen extends Screen {
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
 						item.itemActivate();
-						if (item.isMultiShotActivated) {
-							isMultiShotOn = true;
+						if (item.isMultiShotActivated && !(shotNum == 3)) {
+							shotNum++;
+							item.isMultiShotActivated = false;
 						}
 					}
 				if (this.enemyShipSpecial != null
