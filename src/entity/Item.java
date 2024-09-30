@@ -5,6 +5,7 @@ import java.util.Random;
 public class Item {
     public boolean isGhostAction = false;
     public boolean isMultiShotActivated = false;
+    public boolean isLineBombActivated = false;
 
     public void itemActivate() {
         if (Math.random() < 0.99) {
@@ -20,6 +21,7 @@ public class Item {
                 case 2:
                     break;
                 case 3:
+                    isLineBombActivated = true;
                     break;
                 case 4:
                     isGhostAction = true;
