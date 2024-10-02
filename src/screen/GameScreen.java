@@ -69,8 +69,6 @@ public class GameScreen extends Screen {
 
 	private Item item = new Item();
 
-	private boolean isMultiShotOn = false;
-
 	private int shotNum = 1;
 
 	/**
@@ -205,7 +203,6 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
-			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -293,10 +290,7 @@ public class GameScreen extends Screen {
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
 						item.itemActivate();
-						if (item.isMultiShotActivated && !(shotNum == 3)) {
-							shotNum++;
-							item.isMultiShotActivated = false;
-						}
+
 					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
