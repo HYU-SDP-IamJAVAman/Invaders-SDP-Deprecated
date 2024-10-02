@@ -81,22 +81,6 @@ public class Ship extends Entity {
 					positionY, BULLET_SPEED));
 			soundManager.playSound(Sound.PLAYER_LASER);
 			return true;
-		} else if(this.shootingCooldown.checkFinished() && shotNum == 2) {
-			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width,
-					positionY, BULLET_SPEED));
-			bullets.add(BulletPool.getBullet(positionX,
-					positionY, BULLET_SPEED));
-			return true;
-		} else if(this.shootingCooldown.checkFinished() && shotNum == 3) {
-			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width,
-					positionY, BULLET_SPEED));
-			bullets.add(BulletPool.getBullet(positionX,
-					positionY, BULLET_SPEED));
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY, BULLET_SPEED));
-			return true;
 		}
 		return false;
 	}
