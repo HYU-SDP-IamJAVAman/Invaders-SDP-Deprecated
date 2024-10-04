@@ -31,8 +31,6 @@ public class Ship extends Entity {
 	/** Singleton instance of SoundManager */
 	private final SoundManager soundManager = SoundManager.getInstance();
 
-	private int shotNum = 1;
-
 	/**
 	 * Constructor, establishes the ship's properties.
 	 * 
@@ -75,13 +73,35 @@ public class Ship extends Entity {
 	 * @return Checks if the bullet was shot correctly.
 	 */
 	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
-		if (this.shootingCooldown.checkFinished() && shotNum == 1) {
+		if (this.shootingCooldown.checkFinished()) {
 			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY, BULLET_SPEED));
-			soundManager.playSound(Sound.PLAYER_LASER);
-			return true;
+			if (shotNum == 1) {
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			} else if(shotNum == 2) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			} else if(shotNum == 3) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, BULLET_SPEED));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			}
 		}
+
 		return false;
 	}
 
