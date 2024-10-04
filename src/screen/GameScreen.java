@@ -3,6 +3,7 @@ package screen;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -76,6 +77,8 @@ public class GameScreen extends Screen {
 
 	private List<List<EnemyShip>> enemyShips;
 
+	private Set<Barrier> barriers;
+
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -125,6 +128,7 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+		this.barriers = new HashSet<Barrier>();
 
 		enemyShips = this.enemyShipFormation.getEnemyShips();
 
@@ -241,6 +245,9 @@ public class GameScreen extends Screen {
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
 
+		for(Barrier barrier : this.barriers)
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
+
 		// Interface.
 		drawManager.drawScore(this, this.score);
 		drawManager.drawLives(this, this.lives);
@@ -293,6 +300,23 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
+				// 배리어와 총알이 충돌했을 때
+				if(this.barriers != null) {
+					// Iterator를 사용하여 barriers를 순회하면서 충돌했는지 확인
+					// hasNext()을 사용하지 않으면 ConcurrentModificationException 발생
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while(barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
+
 			} else {
                 int destroyVerticalValue = -1;
                 int destroyShipHorizonalValue = -1;
@@ -326,7 +350,13 @@ public class GameScreen extends Screen {
                             }
                             else if (item.isLineBombActivated){
                                 operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-                            }
+                            }else if(item.isBarrierActivated) {
+								int barrierX = this.ship.getPositionX();
+								int barrierY = this.ship.getPositionY() - 75;
+								Barrier barrier = new Barrier(barrierX, barrierY);
+								barriers.add(barrier);
+								item.setBarrierDeactivated();
+							}
                         }
                     }
                 }
