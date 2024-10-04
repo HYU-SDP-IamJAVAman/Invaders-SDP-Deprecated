@@ -338,7 +338,7 @@ public class GameScreen extends Screen {
                             destroyVerticalValue = i;
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
-							item = new Item(false, false, false);
+							item = new Item();
 							dropItem();
                             if (item.isGhostAction) {
                                 isGhostOn = true;
