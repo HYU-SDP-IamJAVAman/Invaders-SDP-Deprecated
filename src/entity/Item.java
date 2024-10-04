@@ -7,6 +7,8 @@ public class Item {
     public boolean isMultiShotActivated = false;
     public boolean isLineBombActivated = false;
 
+    public boolean isBarrierActivated = false;
+
     public void itemActivate() {
         if (Math.random() < 0.99) {
             Random random = new Random();
@@ -19,6 +21,7 @@ public class Item {
                 case 1:
                     break;
                 case 2:
+                    isBarrierActivated = true;
                     break;
                 case 3:
                     isLineBombActivated = true;
@@ -27,7 +30,7 @@ public class Item {
                     isGhostAction = true;
                     break;
                 case 5:
-                    isMultiShotActivated = true;
+                    isBarrierActivated = true;
                     break;
             }
 
@@ -36,6 +39,10 @@ public class Item {
 
     public void setIsGhostActive() {
         isGhostAction = false;
+    }
+
+    public void setBarrierDeactivated() {
+        isBarrierActivated = false;
     }
 
 }
