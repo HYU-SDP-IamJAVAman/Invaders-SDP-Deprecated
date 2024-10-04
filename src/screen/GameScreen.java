@@ -71,8 +71,6 @@ public class GameScreen extends Screen {
 
 	private List<List<EnemyShip>> enemyShips;
 
-	private Item item = new Item();
-
 	private boolean isGhostOn = false;
 
 	private boolean isMultiShotOn = false;
@@ -338,15 +336,10 @@ public class GameScreen extends Screen {
 							this.enemyShipFormation.destroy(enemyShip);
 
                             destroyVerticalValue = i;
-							destroyShipHorizonalValue = j;
-							recyclable.add(bullet);
-
-                            item.itemActivate();
-
-                            if (item.isLineBombActivated){
-								operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-							}
-
+                            destroyShipHorizonalValue = j;
+                            recyclable.add(bullet);
+							Item item = new Item(false,false,false);
+							item.itemActivate();
                             if (item.isGhostAction) {
                                 isGhostOn = true;
                                 this.ship.setColor(Color.DARK_GRAY);
