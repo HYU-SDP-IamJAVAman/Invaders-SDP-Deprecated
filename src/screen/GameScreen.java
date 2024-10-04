@@ -74,6 +74,8 @@ public class GameScreen extends Screen {
 
 	private List<List<EnemyShip>> enemyShips;
 
+	private Item item;
+
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -305,8 +307,8 @@ public class GameScreen extends Screen {
                             destroyVerticalValue = i;
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
-							Item item = new Item(false,false,false);
-							item.itemActivate();
+							item = new Item(false, false, false);
+							dropItem();
                             if (item.isGhostAction) {
                                 isGhostOn = true;
                                 this.ship.setColor(Color.DARK_GRAY);
@@ -341,6 +343,12 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
+	}
+
+	private void dropItem() {
+		if(Math.random() < 0.99){
+			item.itemActivate();
+		}
 	}
 
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
