@@ -9,7 +9,7 @@ public class Item {
     public boolean isLineBombActivated;
     public boolean isBarrierActivated;
 
-    public Item(boolean isGhostAction, boolean isMultiShotActivated, boolean isLineBombActivated) {
+    public Item() {
         this.isGhostAction = false;
         this.isMultiShotActivated = false;
         this.isLineBombActivated = false;
