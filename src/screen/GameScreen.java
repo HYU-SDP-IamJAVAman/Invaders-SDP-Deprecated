@@ -68,8 +68,6 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private Item item = new Item();
-
 	private boolean isGhostOn = false;
 
 	private boolean isMultiShotOn = false;
@@ -307,7 +305,8 @@ public class GameScreen extends Screen {
                             destroyVerticalValue = i;
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
-                            item.itemActivate();
+							Item item = new Item(false,false,false);
+							item.itemActivate();
                             if (item.isGhostAction) {
                                 isGhostOn = true;
                                 this.ship.setColor(Color.DARK_GRAY);
