@@ -8,7 +8,7 @@ public class Item {
     public boolean isMultiShotActivated;
     public boolean isLineBombActivated;
 
-    public Item(boolean isGhostAction, boolean isMultiShotActivated, boolean isLineBombActivated) {
+    public Item() {
         this.isGhostAction = false;
         this.isMultiShotActivated = false;
         this.isLineBombActivated = false;
