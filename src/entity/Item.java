@@ -17,7 +17,6 @@ public class Item {
     }
 
     public void itemActivate() {
-        if (Math.random() < 0.99) {
             Random random = new Random();
             int randomMethodIndex = random.nextInt(6);
             System.out.println(randomMethodIndex);
@@ -40,8 +39,6 @@ public class Item {
                     isMultiShotActivated = true;
                     break;
             }
-
-        }
     }
 
     public void setIsGhostActive() {
