@@ -338,32 +338,35 @@ public class GameScreen extends Screen {
                             destroyVerticalValue = i;
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
-							item = new Item();
-							dropItem();
-                            if (item.isGhostAction) {
-                                isGhostOn = true;
-                                this.ship.setColor(Color.DARK_GRAY);
-                                new Thread(() -> {
-                                    try {
-                                        Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-                                        isGhostOn = false;
-                                        this.ship.setColor(Color.GREEN);
-                                        item.setIsGhostActive();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }).start();
-                            } else if (item.isMultiShotActivated) {
-                                isMultiShotOn = true;
-                            }
-                            else if (item.isLineBombActivated){
-                                operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-                            } else if(item.isBarrierActivated) {
-								int barrierX = this.ship.getPositionX();
-								int barrierY = this.ship.getPositionY() - 75;
-								Barrier barrier = new Barrier(barrierX, barrierY);
-								barriers.add(barrier);
-								item.setBarrierDeactivated();
+
+							if(dropItem()){
+								if (item.isGhostAction) {
+									isGhostOn = true;
+									this.ship.setColor(Color.DARK_GRAY);
+									new Thread(() -> {
+										try {
+											Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+											isGhostOn = false;
+											this.ship.setColor(Color.GREEN);
+											item.setIsGhostActive();
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
+									}).start();
+								} else if (item.isMultiShotActivated) {
+									isMultiShotOn = true;
+								}
+								else if (item.isLineBombActivated){
+									operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+								} else if(item.isBarrierActivated) {
+                                    int barrierX = this.ship.getPositionX();
+                                    int barrierY = this.ship.getPositionY() - 75;
+                                    Barrier barrier = new Barrier(barrierX, barrierY);
+                                    barriers.add(barrier);
+                                    item.setBarrierDeactivated();
+                                }
+							}else{
+								break;
 							}
                         }
                     }
@@ -382,10 +385,13 @@ public class GameScreen extends Screen {
 		BulletPool.recycle(recyclable);
 	}
 
-	private void dropItem() {
+	private boolean dropItem() {
 		if(Math.random() < 0.99){
+			item = new Item();
 			item.itemActivate();
+			return true;
 		}
+		return false;
 	}
 
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
