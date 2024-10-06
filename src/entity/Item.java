@@ -3,13 +3,19 @@ package entity;
 import java.util.Random;
 
 public class Item {
-    public boolean isGhostAction = false;
-    public boolean isMultiShotActivated = false;
-    public boolean isLineBombActivated = false;
+
+    public boolean isGhostAction;
+    public boolean isMultiShotActivated;
+    public boolean isLineBombActivated;
+
+    public Item() {
+        this.isGhostAction = false;
+        this.isMultiShotActivated = false;
+        this.isLineBombActivated = false;
+    }
 
 
     public void itemActivate() {
-        if (Math.random() < 0.99) {
             Random random = new Random();
             int randomMethodIndex = random.nextInt(6);
             System.out.println(randomMethodIndex);
@@ -31,8 +37,6 @@ public class Item {
                     isMultiShotActivated = true;
                     break;
             }
-
-        }
     }
 
     public void setIsGhostActive() {
