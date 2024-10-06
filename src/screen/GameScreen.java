@@ -68,9 +68,9 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private boolean isGhostOn = false;
+	private int shotNum = 1;
 
-	private boolean isMultiShotOn = false;
+	private boolean isGhostOn = false;
 
 	private List<List<EnemyShip>> enemyShips;
 
@@ -174,12 +174,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, isMultiShotOn))
-						if (isMultiShotOn) {
-							this.bulletsShot += 2;
-						} else {
-							this.bulletsShot++;
-						}
+					if (this.ship.shoot(this.bullets, shotNum))
+						this.bulletsShot += shotNum;
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -214,7 +210,6 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
-			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -308,29 +303,30 @@ public class GameScreen extends Screen {
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
 
-							if(dropItem()){
-								if (item.isGhostAction) {
-									isGhostOn = true;
-									this.ship.setColor(Color.DARK_GRAY);
-									new Thread(() -> {
-										try {
-											Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-											isGhostOn = false;
-											this.ship.setColor(Color.GREEN);
-											item.setIsGhostActive();
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}
-									}).start();
-								} else if (item.isMultiShotActivated) {
-									isMultiShotOn = true;
-								}
-								else if (item.isLineBombActivated){
-									operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-								}
-							}else{
-								break;
-							}
+                            if(dropItem()){
+                              if (item.isGhostAction) {
+                                isGhostOn = true;
+                                this.ship.setColor(Color.DARK_GRAY);
+                                new Thread(() -> {
+                                  try {
+                                    Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+                                    isGhostOn = false;
+                                    this.ship.setColor(Color.GREEN);
+                                    item.setIsGhostActive();
+                                  } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                  }
+                                }).start();
+                              } else if (item.isMultiShotActivated && !(shotNum == 3)) {
+                                shotNum++;
+                                item.isMultiShotOn = true;
+                              }
+                              else if (item.isLineBombActivated){
+                                operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+                              }
+                            }else{
+                              break;
+              							}
                         }
                     }
                 }
