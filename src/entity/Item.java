@@ -7,6 +7,7 @@ public class Item {
     public boolean isMultiShotActivated = false;
     public boolean isLineBombActivated = false;
 
+
     public void itemActivate() {
         if (Math.random() < 0.99) {
             Random random = new Random();
