@@ -9,6 +9,7 @@ import java.util.Set;
 
 import engine.*;
 import entity.*;
+import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
@@ -71,13 +72,9 @@ public class GameScreen extends Screen {
 
 	private List<List<EnemyShip>> enemyShips;
 
-	private boolean isGhostOn = false;
-
 	private Set<Barrier> barriers;
 
-	private Item item;
-
-    private int shotNum = 1;
+	private ItemManager itemManager;
 
     /**
 	 * Constructor, establishes the properties of the screen.
@@ -134,6 +131,7 @@ public class GameScreen extends Screen {
 		this.barriers = new HashSet<Barrier>();
 
 		enemyShips = this.enemyShipFormation.getEnemyShips();
+		this.itemManager = new ItemManager();
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -183,8 +181,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, shotNum))
-						this.bulletsShot += shotNum;
+					if (this.ship.shoot(this.bullets, itemManager.getShotNum()))
+						this.bulletsShot += itemManager.getShotNum();
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -290,7 +288,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -334,34 +332,31 @@ public class GameScreen extends Screen {
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
 
-							if(dropItem()){
-								if (item.isGhostAction) {
-									isGhostOn = true;
-									this.ship.setColor(Color.DARK_GRAY);
-									new Thread(() -> {
-										try {
-											Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-											isGhostOn = false;
-											this.ship.setColor(Color.GREEN);
-											item.setIsGhostActive();
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}
-									}).start();
-								} else if (item.isMultiShotActivated && !(shotNum == 3)) {
-									this.shotNum++;
-                                    item.isMultiShotActivated = false;
+							ItemType itemType = itemManager.dropItem();
+							if (itemType != null) {
+								switch (itemType) {
+									case Bomb:
+										itemManager.operateBomb();
+										break;
+									case LineBomb:
+//										itemManager.operateLineBomb();
+										operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+										break;
+									case Barrier:
+										itemManager.operateBarrier();
+										break;
+									case Goast:
+										itemManager.operateGoast(this.ship);
+										break;
+									case TimeStop:
+										itemManager.operateTimeStop();
+										break;
+									case MultiShot:
+										itemManager.operateMultiShot();
+										break;
 								}
-								else if (item.isLineBombActivated){
-									operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-								} else if(item.isBarrierActivated) {
-                                    int barrierX = this.ship.getPositionX();
-                                    int barrierY = this.ship.getPositionY() - 75;
-                                    Barrier barrier = new Barrier(barrierX, barrierY);
-                                    barriers.add(barrier);
-                                    item.setBarrierDeactivated();
-                                }
-							}else{
+
+							} else {
 								break;
 							}
                         }
@@ -379,15 +374,6 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
-	}
-
-	private boolean dropItem() {
-		if(Math.random() < 0.99){
-			item = new Item();
-			item.itemActivate();
-			return true;
-		}
-		return false;
 	}
 
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
