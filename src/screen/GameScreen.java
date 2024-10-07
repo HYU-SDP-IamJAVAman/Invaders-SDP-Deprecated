@@ -72,6 +72,8 @@ public class GameScreen extends Screen {
 
 	private boolean isGhostOn = false;
 
+	private boolean isTimeStopOn = false;
+
 	private List<List<EnemyShip>> enemyShips;
 
 	private Item item;
@@ -184,7 +186,6 @@ public class GameScreen extends Screen {
 					this.enemyShipSpecial.move(2, 0);
 				else if (this.enemyShipSpecialExplosionCooldown.checkFinished())
 					this.enemyShipSpecial = null;
-
 			}
 			if (this.enemyShipSpecial == null
 					&& this.enemyShipSpecialCooldown.checkFinished()) {
@@ -198,9 +199,14 @@ public class GameScreen extends Screen {
 				this.logger.info("The special ship has escaped");
 			}
 
-			this.ship.update();
-			this.enemyShipFormation.update();
-			this.enemyShipFormation.shoot(this.bullets);
+			if (isTimeStopOn) {
+				this.ship.update();
+			}
+			else {
+				this.ship.update();
+				this.enemyShipFormation.update();
+				this.enemyShipFormation.shoot(this.bullets);
+			}
 		}
 
 		manageCollisions();
@@ -307,6 +313,7 @@ public class GameScreen extends Screen {
                             if(dropItem()){
                               if (item.isGhostAction) {
                                 isGhostOn = true;
+								item.isGhostAction = false;
                                 this.ship.setColor(Color.DARK_GRAY);
                                 new Thread(() -> {
                                   try {
@@ -318,11 +325,23 @@ public class GameScreen extends Screen {
                                     e.printStackTrace();
                                   }
                                 }).start();
-                              } else if (item.isMultiShotActivated && !(shotNum == 3)) {
+                              } if (item.isMultiShotActivated && !(shotNum == 3)) {
                                 shotNum++;
                                 item.isMultiShotActivated = false;
                               }
-                              else if (item.isLineBombActivated){
+							  if (item.isTimeStopActivated) {
+								  isTimeStopOn = true;
+								  new Thread(() -> {
+									  try {
+										  Thread.sleep(4000);
+										  isTimeStopOn = false;
+										  item.setIsTimeStopActivated();
+									  } catch (InterruptedException e) {
+										  e.printStackTrace();
+									  }
+								  }).start();
+							  }
+                              if (item.isLineBombActivated){
                                 operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
                               }
                             }else{

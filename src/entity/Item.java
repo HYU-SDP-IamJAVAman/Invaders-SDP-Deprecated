@@ -7,11 +7,13 @@ public class Item {
     public boolean isGhostAction;
     public boolean isMultiShotActivated;
     public boolean isLineBombActivated;
+    public boolean isTimeStopActivated;
 
     public Item() {
         this.isGhostAction = false;
         this.isMultiShotActivated = false;
         this.isLineBombActivated = false;
+        this.isTimeStopActivated = false;
     }
 
 
@@ -26,6 +28,7 @@ public class Item {
                 case 1:
                     break;
                 case 2:
+                    isTimeStopActivated = true;
                     break;
                 case 3:
                     isLineBombActivated = true;
@@ -42,5 +45,7 @@ public class Item {
     public void setIsGhostActive() {
         isGhostAction = false;
     }
+
+    public void setIsTimeStopActivated() { isTimeStopActivated = false; }
 
 }
