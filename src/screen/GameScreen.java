@@ -319,7 +319,7 @@ public class GameScreen extends Screen {
                                 }).start();
                               } else if (item.isMultiShotActivated && !(shotNum == 3)) {
                                 shotNum++;
-                                item.isMultiShotOn = true;
+                                item.isMultiShotActivated = false;
                               }
                               else if (item.isLineBombActivated){
                                 operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
