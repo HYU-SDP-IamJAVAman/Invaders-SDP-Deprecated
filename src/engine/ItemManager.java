@@ -16,7 +16,7 @@ public class ItemManager {
         this.shotNum = 1;
     }
 
-    private enum ItemType {
+    public enum ItemType {
         Bomb,
         LineBomb,
         Barrier,
@@ -25,7 +25,7 @@ public class ItemManager {
         MultiShot
     }
 
-    public void dropItem() {
+    public ItemType dropItem() {
         if (Math.random() < 0.99) {
             Random rand = new Random();
             switch (rand.nextInt(6)) {
@@ -51,6 +51,8 @@ public class ItemManager {
         } else {
             this.itemType = null;
         }
+
+        return this.itemType;
     }
 
     public void operateBomb() {}
@@ -83,5 +85,9 @@ public class ItemManager {
 
     public int getShotNum() {
         return shotNum;
+    }
+
+    public boolean isGoastActive() {
+        return GoastActive;
     }
 }
