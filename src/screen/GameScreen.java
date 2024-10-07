@@ -68,13 +68,13 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private Item item = new Item();
+	private int shotNum = 1;
 
 	private boolean isGhostOn = false;
 
-	private boolean isMultiShotOn = false;
-
 	private List<List<EnemyShip>> enemyShips;
+
+	private Item item;
 
     /**
 	 * Constructor, establishes the properties of the screen.
@@ -174,12 +174,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, isMultiShotOn))
-						if (isMultiShotOn) {
-							this.bulletsShot += 2;
-						} else {
-							this.bulletsShot++;
-						}
+					if (this.ship.shoot(this.bullets, shotNum))
+						this.bulletsShot += shotNum;
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -214,7 +210,6 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
-			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -307,26 +302,31 @@ public class GameScreen extends Screen {
                             destroyVerticalValue = i;
                             destroyShipHorizonalValue = j;
                             recyclable.add(bullet);
-                            item.itemActivate();
-                            if (item.isGhostAction) {
+
+                            if(dropItem()){
+                              if (item.isGhostAction) {
                                 isGhostOn = true;
                                 this.ship.setColor(Color.DARK_GRAY);
                                 new Thread(() -> {
-                                    try {
-                                        Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-                                        isGhostOn = false;
-                                        this.ship.setColor(Color.GREEN);
-                                        item.setIsGhostActive();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
+                                  try {
+                                    Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+                                    isGhostOn = false;
+                                    this.ship.setColor(Color.GREEN);
+                                    item.setIsGhostActive();
+                                  } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                  }
                                 }).start();
-                            } else if (item.isMultiShotActivated) {
-                                isMultiShotOn = true;
-                            }
-                            else if (item.isLineBombActivated){
+                              } else if (item.isMultiShotActivated && !(shotNum == 3)) {
+                                shotNum++;
+                                item.isMultiShotOn = true;
+                              }
+                              else if (item.isLineBombActivated){
                                 operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-                            }
+                              }
+                            }else{
+                              break;
+              							}
                         }
                     }
                 }
@@ -342,6 +342,15 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
+	}
+
+	private boolean dropItem() {
+		if(Math.random() < 0.99){
+			item = new Item();
+			item.itemActivate();
+			return true;
+		}
+		return false;
 	}
 
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
