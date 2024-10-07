@@ -1,19 +1,16 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import engine.Cooldown;
 import engine.Core;
 import engine.GameSettings;
 import engine.GameState;
-import entity.Bullet;
-import entity.BulletPool;
-import entity.EnemyShip;
-import entity.EnemyShipFormation;
-import entity.Entity;
-import entity.Ship;
+import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
@@ -71,7 +68,15 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	/**
+	private int shotNum = 1;
+
+	private boolean isGhostOn = false;
+
+	private List<List<EnemyShip>> enemyShips;
+
+	private Item item;
+
+    /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
 	 * @param gameState
@@ -121,6 +126,8 @@ public class GameScreen extends Screen {
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
 
+		enemyShips = this.enemyShipFormation.getEnemyShips();
+
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
 		this.inputDelay = Core.getCooldown(INPUT_DELAY);
@@ -168,8 +175,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets))
-						this.bulletsShot++;
+					if (this.ship.shoot(this.bullets, shotNum))
+						this.bulletsShot += shotNum;
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -273,7 +280,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -283,14 +290,47 @@ public class GameScreen extends Screen {
 					}
 				}
 			} else {
-				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
-							&& checkCollision(bullet, enemyShip)) {
-						this.score += enemyShip.getPointValue();
-						this.shipsDestroyed++;
-						this.enemyShipFormation.destroy(enemyShip);
-						recyclable.add(bullet);
-					}
+                int destroyVerticalValue = -1;
+                int destroyShipHorizonalValue = -1;
+                for(int i=0 ; i<enemyShips.size(); i++){
+                    for(int j=0 ; j< enemyShips.get(i).size(); j++){
+                        EnemyShip enemyShip = enemyShips.get(i).get(j);
+                        if (!enemyShip.isDestroyed()
+                                && checkCollision(bullet, enemyShip)) {
+                            this.score += enemyShip.getPointValue();
+                            this.shipsDestroyed++;
+                            this.enemyShipFormation.destroy(enemyShip);
+                            destroyVerticalValue = i;
+                            destroyShipHorizonalValue = j;
+                            recyclable.add(bullet);
+
+                            if(dropItem()){
+                              if (item.isGhostAction) {
+                                isGhostOn = true;
+                                this.ship.setColor(Color.DARK_GRAY);
+                                new Thread(() -> {
+                                  try {
+                                    Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+                                    isGhostOn = false;
+                                    this.ship.setColor(Color.GREEN);
+                                    item.setIsGhostActive();
+                                  } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                  }
+                                }).start();
+                              } else if (item.isMultiShotActivated && !(shotNum == 3)) {
+                                shotNum++;
+                                item.isMultiShotActivated = false;
+                              }
+                              else if (item.isLineBombActivated){
+                                operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+                              }
+                            }else{
+                              break;
+              							}
+                        }
+                    }
+                }
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
@@ -303,6 +343,30 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
+	}
+
+	private boolean dropItem() {
+		if(Math.random() < 0.99){
+			item = new Item();
+			item.itemActivate();
+			return true;
+		}
+		return false;
+	}
+
+	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
+		            for(int i=0 ; i<enemyShips.size() ;i++){
+						if(i != column) continue;
+						for(int j=0 ; j<enemyShips.get(i).size(); j++){
+							if(j == row) continue;
+							enemyShip = enemyShips.get(i).get(j);
+								this.enemyShipFormation.destroy(enemyShip);
+								this.score += enemyShip.getPointValue();
+								this.shipsDestroyed++;
+								recyclable.add(bullet);
+						}
+					}
+		System.out.println("OperatingLineBomb!");
 	}
 
 	/**
