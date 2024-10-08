@@ -2,13 +2,12 @@ package screen;
 
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Iterator;
 
 import engine.*;
 import entity.*;
-import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
@@ -66,8 +65,6 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private List<List<EnemyShip>> enemyShips;
-
 	private ItemManager itemManager;
 
 	private Set<ItemBox> itemBoxes;
@@ -123,8 +120,7 @@ public class GameScreen extends Screen {
 		this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
-		enemyShips = this.enemyShipFormation.getEnemyShips();
-		this.itemManager = new ItemManager();
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -287,7 +283,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -306,7 +302,16 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 
 						if (itemManager.dropItem()) {
-							this.itemBoxes.add(new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY()));
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(newItemBox);
+							new Thread(() -> {
+								try {
+									Thread.sleep(100);
+									newItemBox.appearRightNow = false;
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
 						} else {
 							break;
 						}
@@ -324,7 +329,7 @@ public class GameScreen extends Screen {
 				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
 				while (itemBoxIterator.hasNext()) {
 					ItemBox itemBox = itemBoxIterator.next();
-					if (checkCollision(bullet, itemBox)) {
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
 						itemBoxIterator.remove();
 						recyclable.add(bullet);
 						switch (itemManager.selectItemType()) {
@@ -332,13 +337,15 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb();
+								Entry<Integer, Integer> result = itemManager.operateLineBomb();
+								this.score += result.getKey();
+								this.shipsDestroyed += result.getValue();
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
 								break;
-							case Goast:
-								itemManager.operateGoast(this.ship);
+							case Ghost:
+								itemManager.operateGhost();
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
@@ -352,22 +359,6 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
-	}
-
-	// TODO
-	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
-		            for(int i=0 ; i<enemyShips.size() ;i++){
-						if(i != column) continue;
-						for(int j=0 ; j<enemyShips.get(i).size(); j++){
-							if(j == row) continue;
-							enemyShip = enemyShips.get(i).get(j);
-								this.enemyShipFormation.destroy(enemyShip);
-								this.score += enemyShip.getPointValue();
-								this.shipsDestroyed++;
-								recyclable.add(bullet);
-						}
-					}
-		System.out.println("OperatingLineBomb!");
 	}
 
 	/**
