@@ -1,9 +1,17 @@
 package engine;
 
+import entity.Bullet;
+import entity.EnemyShip;
+import entity.EnemyShipFormation;
 import entity.Ship;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
+import static java.lang.Math.max;
 
 /**
  * Manages item logic
@@ -67,7 +75,30 @@ public class ItemManager {
 
     public void operateBomb() {}
 
-    public void operateLineBomb() {}
+    public void operateLineBomb(List<List<EnemyShip>> enemyShips, Set<Bullet> recyclable, Bullet bullet, int shipsDestroyed, int score, EnemyShipFormation enemyShipFormation) {
+        int maxRow =0;
+        for (java.util.List<EnemyShip> ship : enemyShips) {
+            maxRow = max(maxRow, ship.size() - 1);
+        }
+
+        List<EnemyShip> destroyList = new ArrayList<>();
+
+        for(int i=0 ; i<enemyShips.size() ;i++) {
+            for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                EnemyShip enemyShip = enemyShips.get(i).get(j);
+                if(i == maxRow && !enemyShip.isDestroyed()){
+                    destroyList.add(enemyShip);
+                }
+            }
+        }
+
+        for (EnemyShip destroyedShip : destroyList) {
+            score += destroyedShip.getPointValue();
+            shipsDestroyed++;
+            enemyShipFormation.destroy(destroyedShip);
+            recyclable.add(bullet);
+        }
+    }
 
     public void operateBarrier() {}
 
