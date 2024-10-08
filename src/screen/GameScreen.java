@@ -1,15 +1,13 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Iterator;
 
 import engine.*;
 import entity.*;
-import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
@@ -67,8 +65,6 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private List<List<EnemyShip>> enemyShips;
-
 	private ItemManager itemManager;
 
 	private Set<ItemBox> itemBoxes;
@@ -124,8 +120,7 @@ public class GameScreen extends Screen {
 		this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
-		enemyShips = this.enemyShipFormation.getEnemyShips();
-		this.itemManager = new ItemManager();
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -283,7 +278,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -337,13 +332,15 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb(this.enemyShips,recyclable, bullet, this.shipsDestroyed, this.score, this.enemyShipFormation);
+								Entry<Integer, Integer> result = itemManager.operateLineBomb();
+								this.score += result.getKey();
+								this.shipsDestroyed += result.getValue();
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
 								break;
-							case Goast:
-								itemManager.operateGoast(this.ship);
+							case Ghost:
+								itemManager.operateGhost();
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
