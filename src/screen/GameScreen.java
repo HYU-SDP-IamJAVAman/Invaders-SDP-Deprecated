@@ -305,13 +305,13 @@ public class GameScreen extends Screen {
                             item.itemActivate();
                             if (item.isGhostAction) {
                                 isGhostOn = true;
+								item.isGhostAction = false;
                                 this.ship.setColor(Color.DARK_GRAY);
                                 new Thread(() -> {
                                     try {
                                         Thread.sleep(3000);  // 3초 후 고스트 모드 해제
                                         isGhostOn = false;
                                         this.ship.setColor(Color.GREEN);
-                                        item.setIsGhostActive();
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
                                     }
