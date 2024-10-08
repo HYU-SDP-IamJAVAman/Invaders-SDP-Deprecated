@@ -23,4 +23,6 @@ public class ItemBox extends Entity {
 
         this.spriteType = DrawManager.SpriteType.ItemBox;
     }
+
+    public boolean appearRightNow = true;
 }
