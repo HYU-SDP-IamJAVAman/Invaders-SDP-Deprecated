@@ -30,7 +30,7 @@ public class ItemManager {
 
     public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation) {
         this.itemType = null;
-        this.GhostActive = false;
+        this.ghostActive = false;
         this.shotNum = 1;
         this.rand = new Random();
         this.ship = ship;
@@ -134,12 +134,12 @@ public class ItemManager {
     public void operateBarrier() {}
 
     public void operateGhost() {
-        this.GhostActive = true;
+        this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
-                this.GhostActive = false;
+                this.ghostActive = false;
                 this.ship.setColor(Color.GREEN);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -169,14 +169,14 @@ public class ItemManager {
     }
 
     public int getShotNum() {
-        return shotNum;
+        return this.shotNum;
     }
 
     public boolean isGhostActive() {
-        return GhostActive;
+        return this.ghostActive;
     }
 
     public boolean isTimeStopActive() {
-        return timeStopActive;
+        return this.timeStopActive;
     }
 }
