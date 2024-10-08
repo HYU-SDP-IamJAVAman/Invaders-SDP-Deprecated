@@ -281,7 +281,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -340,8 +340,8 @@ public class GameScreen extends Screen {
 							case Barrier:
 								itemManager.operateBarrier();
 								break;
-							case Goast:
-								itemManager.operateGoast(this.ship);
+							case Ghost:
+								itemManager.operateGhost(this.ship);
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
