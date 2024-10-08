@@ -4,6 +4,13 @@ import engine.DrawManager;
 
 import java.awt.*;
 
+/**
+ * Implement an item box that activates an item when destroyed.
+ *
+ * @author Seochan Moon
+ *
+ */
+
 public class ItemBox extends Entity {
     /**
      * Constructor, establishes the entity's generic properties.
