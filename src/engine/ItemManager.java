@@ -5,6 +5,13 @@ import entity.Ship;
 import java.awt.*;
 import java.util.Random;
 
+/**
+ * Manages item logic
+ *
+ * @author Seochan Moon
+ *
+ */
+
 public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 99;
 
