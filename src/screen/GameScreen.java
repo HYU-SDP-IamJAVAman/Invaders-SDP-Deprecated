@@ -364,7 +364,7 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb();
+								itemManager.operateLineBomb(this.enemyShips,recyclable, bullet, this.shipsDestroyed, this.score, this.enemyShipFormation);
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
@@ -384,22 +384,6 @@ public class GameScreen extends Screen {
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
-	}
-
-	// TODO
-	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
-		            for(int i=0 ; i<enemyShips.size() ;i++){
-						if(i != column) continue;
-						for(int j=0 ; j<enemyShips.get(i).size(); j++){
-							if(j == row) continue;
-							enemyShip = enemyShips.get(i).get(j);
-								this.enemyShipFormation.destroy(enemyShip);
-								this.score += enemyShip.getPointValue();
-								this.shipsDestroyed++;
-								recyclable.add(bullet);
-						}
-					}
-		System.out.println("OperatingLineBomb!");
 	}
 
 	/**
