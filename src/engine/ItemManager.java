@@ -17,7 +17,6 @@ import static java.lang.Math.max;
  * Manages item logic
  *
  * @author Seochan Moon
- *
  */
 
 public class ItemManager {
@@ -27,12 +26,16 @@ public class ItemManager {
     private boolean GhostActive;
     private int shotNum;
     private Random rand;
+    private Ship ship;
+    private EnemyShipFormation enemyShipFormation;
 
-    public ItemManager() {
+    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation) {
         this.itemType = null;
         this.GhostActive = false;
         this.shotNum = 1;
         this.rand = new Random();
+        this.ship = ship;
+        this.enemyShipFormation = enemyShipFormation;
     }
 
     public enum ItemType {
@@ -75,18 +78,20 @@ public class ItemManager {
 
     public void operateBomb() {}
 
-    public void operateLineBomb(List<List<EnemyShip>> enemyShips, Set<Bullet> recyclable, Bullet bullet, int shipsDestroyed, int score, EnemyShipFormation enemyShipFormation) {
-        int maxRow =0;
-        for (java.util.List<EnemyShip> ship : enemyShips) {
+    public void operateLineBomb(Set<Bullet> recyclable, Bullet bullet, int shipsDestroyed, int score) {
+        int maxRow = 0;
+        List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
+
+        for (List<EnemyShip> ship : enemyShips) {
             maxRow = max(maxRow, ship.size() - 1);
         }
 
         List<EnemyShip> destroyList = new ArrayList<>();
 
-        for(int i=0 ; i<enemyShips.size() ;i++) {
+        for (int i = 0; i < enemyShips.size(); i++) {
             for (int j = 0; j < enemyShips.get(i).size(); j++) {
                 EnemyShip enemyShip = enemyShips.get(i).get(j);
-                if(i == maxRow && !enemyShip.isDestroyed()){
+                if (i == maxRow && !enemyShip.isDestroyed()) {
                     destroyList.add(enemyShip);
                 }
             }
@@ -102,14 +107,14 @@ public class ItemManager {
 
     public void operateBarrier() {}
 
-    public void operateGhost(Ship ship) {
+    public void operateGhost() {
         this.GhostActive = true;
-        ship.setColor(Color.DARK_GRAY);
+        this.ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
                 this.GhostActive = false;
-                ship.setColor(Color.GREEN);
+                this.ship.setColor(Color.GREEN);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

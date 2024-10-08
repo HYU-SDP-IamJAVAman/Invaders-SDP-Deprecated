@@ -2,7 +2,6 @@ package screen;
 
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.Iterator;
 
@@ -65,8 +64,6 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private List<List<EnemyShip>> enemyShips;
-
 	private ItemManager itemManager;
 
 	private Set<ItemBox> itemBoxes;
@@ -122,8 +119,7 @@ public class GameScreen extends Screen {
 		this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
-		enemyShips = this.enemyShipFormation.getEnemyShips();
-		this.itemManager = new ItemManager();
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -335,13 +331,13 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb(this.enemyShips,recyclable, bullet, this.shipsDestroyed, this.score, this.enemyShipFormation);
+								itemManager.operateLineBomb(recyclable, bullet, this.shipsDestroyed, this.score);
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
 								break;
 							case Ghost:
-								itemManager.operateGhost(this.ship);
+								itemManager.operateGhost();
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
