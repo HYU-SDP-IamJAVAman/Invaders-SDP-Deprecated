@@ -24,6 +24,7 @@ public class ItemManager {
     private boolean timeStopActive;
     private int shotNum;
     private Random rand;
+    private boolean isMaxShotNum = false;
     private Ship ship;
     private EnemyShipFormation enemyShipFormation;
 
@@ -50,25 +51,45 @@ public class ItemManager {
     }
 
     public ItemType selectItemType() {
-        switch (rand.nextInt(6)) {
-            case 0:
-                this.itemType = ItemType.Bomb;
-                break;
-            case 1:
-                this.itemType = ItemType.LineBomb;
-                break;
-            case 2:
-                this.itemType = ItemType.Barrier;
-                break;
-            case 3:
-                this.itemType = ItemType.Ghost;
-                break;
-            case 4:
-                this.itemType = ItemType.TimeStop;
-                break;
-            case 5:
-                this.itemType = ItemType.MultiShot;
-                break;
+        if (!isMaxShotNum) {
+            switch (rand.nextInt(6)) {
+                case 0:
+                    this.itemType = ItemType.Bomb;
+                    break;
+                case 1:
+                    this.itemType = ItemType.LineBomb;
+                    break;
+                case 2:
+                    this.itemType = ItemType.Barrier;
+                    break;
+                case 3:
+                    this.itemType = ItemType.Ghost;
+                    break;
+                case 4:
+                    this.itemType = ItemType.TimeStop;
+                    break;
+                case 5:
+                    this.itemType = ItemType.MultiShot;
+                    break;
+            }
+        } else {
+            switch (rand.nextInt(5)) {
+                case 0:
+                    this.itemType = ItemType.Bomb;
+                    break;
+                case 1:
+                    this.itemType = ItemType.LineBomb;
+                    break;
+                case 2:
+                    this.itemType = ItemType.Barrier;
+                    break;
+                case 3:
+                    this.itemType = ItemType.Ghost;
+                    break;
+                case 4:
+                    this.itemType = ItemType.TimeStop;
+                    break;
+            }
         }
 
         return this.itemType;
@@ -141,6 +162,9 @@ public class ItemManager {
     public void operateMultiShot() {
         if (this.shotNum < 3) {
             this.shotNum++;
+            if (shotNum == 3) {
+                isMaxShotNum = true;
+            }
         }
     }
 
