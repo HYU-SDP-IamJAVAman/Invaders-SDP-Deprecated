@@ -20,6 +20,13 @@ import java.util.Set;
  * @author Seochan Moon
  */
 
+/**
+ * Manages item logic
+ *
+ * @author Seochan Moon
+ *
+ */
+
 public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 100;
 
