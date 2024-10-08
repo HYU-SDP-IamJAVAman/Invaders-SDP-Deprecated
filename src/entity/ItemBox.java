@@ -27,4 +27,6 @@ public class ItemBox extends Entity {
 
         this.spriteType = SpriteType.ItemBox;
     }
+
+    public boolean appearRightNow = true;
 }
