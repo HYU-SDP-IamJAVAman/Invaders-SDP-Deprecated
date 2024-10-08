@@ -76,7 +76,7 @@ public class ItemManager {
         ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
             try {
-                Thread.sleep(3000);  // 3초 후 고스트 모드 해제
+                Thread.sleep(3000);
                 this.GoastActive = false;
                 ship.setColor(Color.GREEN);
             } catch (InterruptedException e) {
