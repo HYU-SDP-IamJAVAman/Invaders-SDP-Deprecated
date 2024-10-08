@@ -6,14 +6,18 @@ import java.awt.*;
 import java.util.Random;
 
 public class ItemManager {
+    private static final int ITEM_DROP_PROBABILITY = 99;
+
     private ItemType itemType;
     private boolean GoastActive;
     private int shotNum;
+    private Random rand;
 
     public ItemManager() {
         this.itemType = null;
         this.GoastActive = false;
         this.shotNum = 1;
+        this.rand = new Random();
     }
 
     public enum ItemType {
@@ -25,31 +29,30 @@ public class ItemManager {
         MultiShot
     }
 
-    public ItemType dropItem() {
-        if (Math.random() < 0.99) {
-            Random rand = new Random();
-            switch (rand.nextInt(6)) {
-                case 0:
-                    this.itemType = ItemType.Bomb;
-                    break;
-                case 1:
-                    this.itemType = ItemType.LineBomb;
-                    break;
-                case 2:
-                    this.itemType = ItemType.Barrier;
-                    break;
-                case 3:
-                    this.itemType = ItemType.Goast;
-                    break;
-                case 4:
-                    this.itemType = ItemType.TimeStop;
-                    break;
-                case 5:
-                    this.itemType = ItemType.MultiShot;
-                    break;
-            }
-        } else {
-            this.itemType = null;
+    public boolean dropItem() {
+        return (rand.nextInt(100) + 1) <= ITEM_DROP_PROBABILITY;
+    }
+
+    public ItemType selectItemType() {
+        switch (rand.nextInt(6)) {
+            case 0:
+                this.itemType = ItemType.Bomb;
+                break;
+            case 1:
+                this.itemType = ItemType.LineBomb;
+                break;
+            case 2:
+                this.itemType = ItemType.Barrier;
+                break;
+            case 3:
+                this.itemType = ItemType.Goast;
+                break;
+            case 4:
+                this.itemType = ItemType.TimeStop;
+                break;
+            case 5:
+                this.itemType = ItemType.MultiShot;
+                break;
         }
 
         return this.itemType;

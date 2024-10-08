@@ -76,6 +76,8 @@ public class GameScreen extends Screen {
 
 	private ItemManager itemManager;
 
+	private ItemBox itemBox;
+
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -130,6 +132,7 @@ public class GameScreen extends Screen {
 		this.bullets = new HashSet<Bullet>();
 		this.barriers = new HashSet<Barrier>();
 
+        // TODO
 		enemyShips = this.enemyShipFormation.getEnemyShips();
 		this.itemManager = new ItemManager();
 
@@ -238,6 +241,11 @@ public class GameScreen extends Screen {
 
 		enemyShipFormation.draw();
 
+		// TODO
+		if (this.itemBox != null) {
+			drawManager.drawEntity(this.itemBox, this.itemBox.getPositionX(), this.itemBox.getPositionY());
+		}
+
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
@@ -315,53 +323,20 @@ public class GameScreen extends Screen {
 				}
 
 			} else {
-				int destroyVerticalValue = -1;
-				int destroyShipHorizonalValue = -1;
-				for(int i=0 ; i<enemyShips.size(); i++){
-					for(int j=0 ; j< enemyShips.get(i).size(); j++) {
+				for (EnemyShip enemyShip : this.enemyShipFormation)
+					if (!enemyShip.isDestroyed()
+							&& checkCollision(bullet, enemyShip)) {
+						this.score += enemyShip.getPointValue();
+						this.shipsDestroyed++;
+						this.enemyShipFormation.destroy(enemyShip);
+						recyclable.add(bullet);
 
-                        EnemyShip enemyShip = enemyShips.get(i).get(j);
-
-                        if (!enemyShip.isDestroyed()
-								&& checkCollision(bullet, enemyShip)) {
-							this.score += enemyShip.getPointValue();
-							this.shipsDestroyed++;
-							this.enemyShipFormation.destroy(enemyShip);
-
-                            destroyVerticalValue = i;
-                            destroyShipHorizonalValue = j;
-                            recyclable.add(bullet);
-
-							ItemType itemType = itemManager.dropItem();
-							if (itemType != null) {
-								switch (itemType) {
-									case Bomb:
-										itemManager.operateBomb();
-										break;
-									case LineBomb:
-//										itemManager.operateLineBomb();
-										operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-										break;
-									case Barrier:
-										itemManager.operateBarrier();
-										break;
-									case Goast:
-										itemManager.operateGoast(this.ship);
-										break;
-									case TimeStop:
-										itemManager.operateTimeStop();
-										break;
-									case MultiShot:
-										itemManager.operateMultiShot();
-										break;
-								}
-
-							} else {
-								break;
-							}
-                        }
-                    }
-                }
+						if (itemManager.dropItem()) {
+							this.itemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+						} else {
+							break;
+						}
+					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
@@ -371,11 +346,38 @@ public class GameScreen extends Screen {
 					this.enemyShipSpecialExplosionCooldown.reset();
 					recyclable.add(bullet);
 				}
+
+				if (this.itemBox != null && checkCollision(bullet, this.itemBox)) {
+					this.itemBox = null;
+					recyclable.add(bullet);
+					switch (itemManager.selectItemType()) {
+						case Bomb:
+							itemManager.operateBomb();
+							break;
+						case LineBomb:
+							itemManager.operateLineBomb();
+//							operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
+							break;
+						case Barrier:
+							itemManager.operateBarrier();
+							break;
+						case Goast:
+							itemManager.operateGoast(this.ship);
+							break;
+						case TimeStop:
+							itemManager.operateTimeStop();
+							break;
+						case MultiShot:
+							itemManager.operateMultiShot();
+							break;
+					}
+				}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
 	}
 
+	// TODO
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
 		            for(int i=0 ; i<enemyShips.size() ;i++){
 						if(i != column) continue;
