@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Iterator;
 
 import engine.*;
 import entity.*;
@@ -76,8 +77,7 @@ public class GameScreen extends Screen {
 
 	private ItemManager itemManager;
 
-	private ItemBox itemBox;
-
+	private Set<ItemBox> itemBoxes;
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -131,6 +131,7 @@ public class GameScreen extends Screen {
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
 		this.barriers = new HashSet<Barrier>();
+        this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
 		enemyShips = this.enemyShipFormation.getEnemyShips();
@@ -242,8 +243,8 @@ public class GameScreen extends Screen {
 		enemyShipFormation.draw();
 
 		// TODO
-		if (this.itemBox != null) {
-			drawManager.drawEntity(this.itemBox, this.itemBox.getPositionX(), this.itemBox.getPositionY());
+		for(ItemBox itemBox : this.itemBoxes) {
+			drawManager.drawEntity(itemBox, itemBox.getPositionX(), itemBox.getPositionY());
 		}
 
 		for (Bullet bullet : this.bullets)
@@ -332,7 +333,7 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 
 						if (itemManager.dropItem()) {
-							this.itemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY()));
 						} else {
 							break;
 						}
@@ -347,31 +348,34 @@ public class GameScreen extends Screen {
 					recyclable.add(bullet);
 				}
 
-				if (this.itemBox != null && checkCollision(bullet, this.itemBox)) {
-					this.itemBox = null;
-					recyclable.add(bullet);
-					switch (itemManager.selectItemType()) {
-						case Bomb:
-							itemManager.operateBomb();
-							break;
-						case LineBomb:
-							itemManager.operateLineBomb();
-//							operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-							break;
-						case Barrier:
-							itemManager.operateBarrier();
-							break;
-						case Goast:
-							itemManager.operateGoast(this.ship);
-							break;
-						case TimeStop:
-							itemManager.operateTimeStop();
-							break;
-						case MultiShot:
-							itemManager.operateMultiShot();
-							break;
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox)) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								itemManager.operateBomb();
+								break;
+							case LineBomb:
+								itemManager.operateLineBomb();
+								break;
+							case Barrier:
+								itemManager.operateBarrier();
+								break;
+							case Goast:
+								itemManager.operateGoast(this.ship);
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
 					}
-				}
+            	}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
