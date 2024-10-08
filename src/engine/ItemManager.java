@@ -20,7 +20,8 @@ public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 99;
 
     private ItemType itemType;
-    private boolean GhostActive;
+    private boolean timeStopActive;
+    private boolean ghostActive;
     private int shotNum;
     private Random rand;
     private Ship ship;
@@ -148,7 +149,17 @@ public class ItemManager {
         }).start();
     }
 
-    public void operateTimeStop() {}
+    public void operateTimeStop() {
+        this.timeStopActive = true;
+        new Thread(() -> {
+            try {
+                Thread.sleep(4000);
+                this.timeStopActive = false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 
     public void operateMultiShot() {
         if (this.shotNum < 3) {
@@ -165,5 +176,9 @@ public class ItemManager {
 
     public boolean isGhostActive() {
         return GhostActive;
+    }
+
+    public boolean isTimeStopActive() {
+        return timeStopActive;
     }
 }
