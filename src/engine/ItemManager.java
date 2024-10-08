@@ -17,6 +17,7 @@ public class ItemManager {
 
     private ItemType itemType;
     private boolean GoastActive;
+    private boolean timeStop;
     private int shotNum;
     private Random rand;
 
@@ -85,7 +86,17 @@ public class ItemManager {
         }).start();
     }
 
-    public void operateTimeStop() {}
+    public void operateTimeStop() {
+        this.timeStop = true;
+        new Thread(() -> {
+            try {
+                Thread.sleep(4000);
+                this.timeStop = false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 
     public void operateMultiShot() {
         if (this.shotNum < 3) {
@@ -99,5 +110,9 @@ public class ItemManager {
 
     public boolean isGoastActive() {
         return GoastActive;
+    }
+
+    public boolean getTimeStop() {
+        return timeStop;
     }
 }
