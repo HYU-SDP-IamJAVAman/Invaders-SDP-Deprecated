@@ -1,6 +1,6 @@
 package entity;
 
-import engine.DrawManager;
+import engine.DrawManager.SpriteType;
 
 import java.awt.*;
 
@@ -21,7 +21,7 @@ public class ItemBox extends Entity {
     public ItemBox(int positionX, int positionY) {
         super(positionX, positionY, 7 * 2, 7 * 2, Color.YELLOW);
 
-        this.spriteType = DrawManager.SpriteType.ItemBox;
+        this.spriteType = SpriteType.ItemBox;
     }
 
     public boolean appearRightNow = true;
