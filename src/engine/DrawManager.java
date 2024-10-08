@@ -91,11 +91,10 @@ public final class DrawManager {
 		EnemyShipSpecial,
 		/** Destroyed enemy ship. */
 		Explosion,
-
 		/** Barrier. */
 		Barrier,
-
-		ItemBox,
+        /** Item Box. */
+        ItemBox,
 	};
 
 	/**
