@@ -17,7 +17,7 @@ public class ItemManager {
 
     private ItemType itemType;
     private boolean GoastActive;
-    private boolean timeStop;
+    private boolean timeStopActive;
     private int shotNum;
     private Random rand;
 
@@ -87,11 +87,11 @@ public class ItemManager {
     }
 
     public void operateTimeStop() {
-        this.timeStop = true;
+        this.timeStopActive = true;
         new Thread(() -> {
             try {
                 Thread.sleep(4000);
-                this.timeStop = false;
+                this.timeStopActive = false;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -112,7 +112,7 @@ public class ItemManager {
         return GoastActive;
     }
 
-    public boolean getTimeStop() {
-        return timeStop;
+    public boolean isTimeStopActive() {
+        return timeStopActive;
     }
 }
