@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.List;
@@ -301,7 +302,16 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 
 						if (itemManager.dropItem()) {
-							this.itemBoxes.add(new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY()));
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(newItemBox);
+							new Thread(() -> {
+								try {
+									Thread.sleep(100);
+									newItemBox.appearRightNow = false;
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
 						} else {
 							break;
 						}
@@ -319,7 +329,7 @@ public class GameScreen extends Screen {
 				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
 				while (itemBoxIterator.hasNext()) {
 					ItemBox itemBox = itemBoxIterator.next();
-					if (checkCollision(bullet, itemBox)) {
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
 						itemBoxIterator.remove();
 						recyclable.add(bullet);
 						switch (itemManager.selectItemType()) {
