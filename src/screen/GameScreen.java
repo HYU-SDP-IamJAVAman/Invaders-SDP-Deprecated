@@ -1,16 +1,14 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Iterator;
 
-import engine.Cooldown;
-import engine.Core;
-import engine.GameSettings;
-import engine.GameState;
+import engine.*;
 import entity.*;
+import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
@@ -68,14 +66,11 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private int shotNum = 1;
-
-	private boolean isGhostOn = false;
-
 	private List<List<EnemyShip>> enemyShips;
 
-	private Item item;
+	private ItemManager itemManager;
 
+	private Set<ItemBox> itemBoxes;
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -125,8 +120,11 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+		this.itemBoxes = new HashSet<ItemBox>();
 
+        // TODO
 		enemyShips = this.enemyShipFormation.getEnemyShips();
+		this.itemManager = new ItemManager();
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -174,8 +172,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, shotNum))
-						this.bulletsShot += shotNum;
+					if (this.ship.shoot(this.bullets, itemManager.getShotNum()))
+						this.bulletsShot += itemManager.getShotNum();
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -232,6 +230,11 @@ public class GameScreen extends Screen {
 
 		enemyShipFormation.draw();
 
+		// TODO
+		for(ItemBox itemBox : this.itemBoxes) {
+			drawManager.drawEntity(itemBox, itemBox.getPositionX(), itemBox.getPositionY());
+		}
+
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
@@ -279,7 +282,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -289,47 +292,20 @@ public class GameScreen extends Screen {
 					}
 				}
 			} else {
-                int destroyVerticalValue = -1;
-                int destroyShipHorizonalValue = -1;
-                for(int i=0 ; i<enemyShips.size(); i++){
-                    for(int j=0 ; j< enemyShips.get(i).size(); j++){
-                        EnemyShip enemyShip = enemyShips.get(i).get(j);
-                        if (!enemyShip.isDestroyed()
-                                && checkCollision(bullet, enemyShip)) {
-                            this.score += enemyShip.getPointValue();
-                            this.shipsDestroyed++;
-                            this.enemyShipFormation.destroy(enemyShip);
-                            destroyVerticalValue = i;
-                            destroyShipHorizonalValue = j;
-                            recyclable.add(bullet);
+				for (EnemyShip enemyShip : this.enemyShipFormation)
+					if (!enemyShip.isDestroyed()
+							&& checkCollision(bullet, enemyShip)) {
+						this.score += enemyShip.getPointValue();
+						this.shipsDestroyed++;
+						this.enemyShipFormation.destroy(enemyShip);
+						recyclable.add(bullet);
 
-                            if(dropItem()){
-                              if (item.isGhostAction) {
-                                isGhostOn = true;
-                                this.ship.setColor(Color.DARK_GRAY);
-                                new Thread(() -> {
-                                  try {
-                                    Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-                                    isGhostOn = false;
-                                    this.ship.setColor(Color.GREEN);
-                                    item.setIsGhostActive();
-                                  } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                  }
-                                }).start();
-                              } else if (item.isMultiShotActivated && !(shotNum == 3)) {
-                                shotNum++;
-                                item.isMultiShotActivated = false;
-                              }
-                              else if (item.isLineBombActivated){
-                                operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-                              }
-                            }else{
-                              break;
-              							}
-                        }
-                    }
-                }
+						if (itemManager.dropItem()) {
+							this.itemBoxes.add(new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY()));
+						} else {
+							break;
+						}
+					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
@@ -339,20 +315,41 @@ public class GameScreen extends Screen {
 					this.enemyShipSpecialExplosionCooldown.reset();
 					recyclable.add(bullet);
 				}
+
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox)) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								itemManager.operateBomb();
+								break;
+							case LineBomb:
+								itemManager.operateLineBomb();
+								break;
+							case Barrier:
+								itemManager.operateBarrier();
+								break;
+							case Goast:
+								itemManager.operateGoast(this.ship);
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
+					}
+            	}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
 	}
 
-	private boolean dropItem() {
-		if(Math.random() < 0.99){
-			item = new Item();
-			item.itemActivate();
-			return true;
-		}
-		return false;
-	}
-
+	// TODO
 	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
 		            for(int i=0 ; i<enemyShips.size() ;i++){
 						if(i != column) continue;

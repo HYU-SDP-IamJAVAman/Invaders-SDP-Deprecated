@@ -27,8 +27,6 @@ public class Ship extends Entity {
 	/** Time spent inactive between hits. */
 	private Cooldown destructionCooldown;
 
-	private int shotNum = 1;
-
 	/**
 	 * Constructor, establishes the ship's properties.
 	 * 
