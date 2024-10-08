@@ -195,7 +195,7 @@ public class GameScreen extends Screen {
 				this.logger.info("The special ship has escaped");
 			}
 
-			if (itemManager.getTimeStop()) {
+			if (itemManager.isTimeStopActive()) {
 				this.ship.update();
 			}
 			else {
