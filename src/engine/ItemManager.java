@@ -1,17 +1,14 @@
 package engine;
 
-import entity.Bullet;
 import entity.EnemyShip;
 import entity.EnemyShipFormation;
 import entity.Ship;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import static java.lang.Math.max;
+import java.util.Map.Entry;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
  * Manages item logic
@@ -79,31 +76,38 @@ public class ItemManager {
 
     public void operateBomb() {}
 
-    public void operateLineBomb(Set<Bullet> recyclable, Bullet bullet, int shipsDestroyed, int score) {
-        int maxRow = 0;
-        List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
+    public Entry<Integer, Integer> operateLineBomb() {
+        int addScore = 0;
+        int addShipsDestroyed = 0;
 
-        for (List<EnemyShip> ship : enemyShips) {
-            maxRow = max(maxRow, ship.size() - 1);
-        }
+        List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
+        int targetRow = -1;
+        int maxCnt = -1;
 
-        List<EnemyShip> destroyList = new ArrayList<>();
-
-        for (int i = 0; i < enemyShips.size(); i++) {
-            for (int j = 0; j < enemyShips.get(i).size(); j++) {
-                EnemyShip enemyShip = enemyShips.get(i).get(j);
-                if (i == maxRow && !enemyShip.isDestroyed()) {
-                    destroyList.add(enemyShip);
+        for (int i = 0; i < enemyships.size(); i++) {
+            int aliveCnt = 0;
+            for (int j = 0; j < enemyships.get(i).size(); j++) {
+                if (enemyships.get(i).get(j) != null && !enemyships.get(i).get(j).isDestroyed()) {
+                    aliveCnt++;
                 }
+            }
+
+            if (aliveCnt > maxCnt) {
+                maxCnt = aliveCnt;
+                targetRow = i;
             }
         }
 
-        for (EnemyShip destroyedShip : destroyList) {
-            score += destroyedShip.getPointValue();
-            shipsDestroyed++;
-            enemyShipFormation.destroy(destroyedShip);
-            recyclable.add(bullet);
+        if (targetRow != -1) {
+            List<EnemyShip> destroyList = new ArrayList<>(enemyships.get(targetRow));
+            for (EnemyShip destroyedShip : destroyList) {
+                addScore += destroyedShip.getPointValue();
+                addShipsDestroyed++;
+                enemyShipFormation.destroy(destroyedShip);
+            }
         }
+
+        return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
     public void operateBarrier() {}

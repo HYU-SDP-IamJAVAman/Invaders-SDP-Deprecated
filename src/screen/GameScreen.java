@@ -2,6 +2,8 @@ package screen;
 
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -369,7 +371,9 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb(recyclable, bullet, this.shipsDestroyed, this.score);
+								Entry<Integer, Integer> result = itemManager.operateLineBomb();
+								this.score += result.getKey();
+								this.shipsDestroyed += result.getValue();
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
