@@ -24,14 +24,14 @@ public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 99;
 
     private ItemType itemType;
-    private boolean GoastActive;
+    private boolean GhostActive;
     private boolean timeStopActive;
     private int shotNum;
     private Random rand;
 
     public ItemManager() {
         this.itemType = null;
-        this.GoastActive = false;
+        this.GhostActive = false;
         this.shotNum = 1;
         this.rand = new Random();
     }
@@ -40,7 +40,7 @@ public class ItemManager {
         Bomb,
         LineBomb,
         Barrier,
-        Goast,
+        Ghost,
         TimeStop,
         MultiShot
     }
@@ -61,7 +61,7 @@ public class ItemManager {
                 this.itemType = ItemType.Barrier;
                 break;
             case 3:
-                this.itemType = ItemType.Goast;
+                this.itemType = ItemType.Ghost;
                 break;
             case 4:
                 this.itemType = ItemType.TimeStop;
@@ -103,13 +103,13 @@ public class ItemManager {
 
     public void operateBarrier() {}
 
-    public void operateGoast(Ship ship) {
-        this.GoastActive = true;
+    public void operateGhost(Ship ship) {
+        this.GhostActive = true;
         ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
-                this.GoastActive = false;
+                this.GhostActive = false;
                 ship.setColor(Color.GREEN);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -139,8 +139,8 @@ public class ItemManager {
         return shotNum;
     }
 
-    public boolean isGoastActive() {
-        return GoastActive;
+    public boolean isGhostActive() {
+        return GhostActive;
     }
 
     public boolean isTimeStopActive() {
