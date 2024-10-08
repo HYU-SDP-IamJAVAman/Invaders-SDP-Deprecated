@@ -131,8 +131,7 @@ public class GameScreen extends Screen {
         this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
-		enemyShips = this.enemyShipFormation.getEnemyShips();
-		this.itemManager = new ItemManager();
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -370,13 +369,13 @@ public class GameScreen extends Screen {
 								itemManager.operateBomb();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb(this.enemyShips,recyclable, bullet, this.shipsDestroyed, this.score, this.enemyShipFormation);
+								itemManager.operateLineBomb(recyclable, bullet, this.shipsDestroyed, this.score);
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
 								break;
 							case Ghost:
-								itemManager.operateGhost(this.ship);
+								itemManager.operateGhost();
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
