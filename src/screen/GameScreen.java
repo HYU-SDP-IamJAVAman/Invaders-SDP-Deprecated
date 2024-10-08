@@ -1,6 +1,5 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Iterator;
 
 import engine.*;
 import entity.*;
-import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
