@@ -11,9 +11,9 @@ import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
- * 
+ *
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
- * 
+ *
  */
 public class GameScreen extends Screen {
 
@@ -72,7 +72,7 @@ public class GameScreen extends Screen {
 	private Set<ItemBox> itemBoxes;
     /**
 	 * Constructor, establishes the properties of the screen.
-	 * 
+	 *
 	 * @param gameState
 	 *            Current game state.
 	 * @param gameSettings
@@ -133,7 +133,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Starts the action.
-	 * 
+	 *
 	 * @return Next screen code.
 	 */
 	public final int run() {
@@ -316,7 +316,7 @@ public class GameScreen extends Screen {
 				}
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
+					if (enemyShip != null && !enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
 						this.score += enemyShip.getPointValue();
 						this.shipsDestroyed++;
@@ -356,12 +356,14 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 						switch (itemManager.selectItemType()) {
 							case Bomb:
-								itemManager.operateBomb();
+								Entry<Integer, Integer> bombResult = itemManager.operateBomb();
+								this.score += bombResult.getKey();
+								this.shipsDestroyed += bombResult.getValue();
 								break;
 							case LineBomb:
-								Entry<Integer, Integer> result = itemManager.operateLineBomb();
-								this.score += result.getKey();
-								this.shipsDestroyed += result.getValue();
+								Entry<Integer, Integer> lineBombResult = itemManager.operateLineBomb();
+								this.score += lineBombResult.getKey();
+								this.shipsDestroyed += lineBombResult.getValue();
 								break;
 							case Barrier:
 								itemManager.operateBarrier(barriers);
@@ -377,7 +379,7 @@ public class GameScreen extends Screen {
 								break;
 						}
 					}
-            	}
+				}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
@@ -385,7 +387,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Checks if two entities are colliding.
-	 * 
+	 *
 	 * @param a
 	 *            First entity, the bullet.
 	 * @param b
@@ -410,7 +412,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Returns a GameState object representing the status of the game.
-	 * 
+	 *
 	 * @return Current game state.
 	 */
 	public final GameState getGameState() {
