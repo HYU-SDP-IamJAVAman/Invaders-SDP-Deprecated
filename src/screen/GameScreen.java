@@ -4,10 +4,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
 
-import engine.Cooldown;
-import engine.Core;
-import engine.GameSettings;
-import engine.GameState;
+import engine.*;
 import entity.*;
 
 /**
@@ -66,6 +63,8 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 	private Wallet wallet;
+	/** Singleton instance of SoundManager */
+	private final SoundManager soundManager = SoundManager.getInstance();
 
 	/**
 	 * Constructor, establishes the properties of the screen.
@@ -124,6 +123,7 @@ public class GameScreen extends Screen {
 		this.gameStartTime = System.currentTimeMillis();
 		this.inputDelay = Core.getCooldown(INPUT_DELAY);
 		this.inputDelay.reset();
+		soundManager.playSound(Sound.COUNTDOWN);
 	}
 
 	/**
@@ -207,7 +207,6 @@ public class GameScreen extends Screen {
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
 			this.isRunning = false;
-
 	}
 
 	/**
