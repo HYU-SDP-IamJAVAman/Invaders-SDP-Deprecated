@@ -5,10 +5,11 @@ import entity.EnemyShipFormation;
 import entity.Ship;
 
 import java.awt.*;
-import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.AbstractMap.SimpleEntry;
+import java.util.Random;
 
 /**
  * Manages item logic
@@ -52,7 +53,7 @@ public class ItemManager {
     }
 
     public ItemType selectItemType() {
-      
+
         if (!isMaxShotNum) {
             switch (rand.nextInt(6)) {
                 case 0:
@@ -93,17 +94,77 @@ public class ItemManager {
                     break;
             }
         }
-      
+
         return this.itemType;
     }
 
-    public void operateBomb() {}
+    public Entry<Integer, Integer> operateBomb() {
+        int addScore = 0;
+        int addShipsDestroyed = 0;
+
+        List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
+        int enemyShipsSize = enemyships.size();
+
+        int maxCnt = -1;
+        int maxRow = 0, maxCol = 0;
+
+        for (int i = 0; i <= enemyShipsSize - 3; i++) {
+
+            List<EnemyShip> rowShips = enemyships.get(i);
+            int rowSize = rowShips.size();
+
+            for (int j = 0; j <= rowSize - 3; j++) {
+
+                int currentCnt = 0;
+
+                for (int x = i; x < i + 3; x++) {
+
+                    List<EnemyShip> subRowShips = enemyships.get(x);
+
+                    for (int y = j; y < j + 3; y++) {
+                        EnemyShip ship = subRowShips.get(y);
+
+                        if (ship != null && !ship.isDestroyed())
+                            currentCnt++;
+                    }
+                }
+
+                if (currentCnt > maxCnt) {
+                    maxCnt = currentCnt;
+                    maxRow = i;
+                    maxCol = j;
+                }
+            }
+        }
+
+        List<EnemyShip> targetEnemyShips = new ArrayList<>();
+        for (int i = maxRow; i < maxRow + 3; i++) {
+            List<EnemyShip> subRowShips = enemyships.get(i);
+            for (int j = maxCol; j < maxCol + 3; j++) {
+                EnemyShip ship = subRowShips.get(j);
+
+                if (ship != null && !ship.isDestroyed())
+                    targetEnemyShips.add(ship);
+            }
+        }
+
+        if (!targetEnemyShips.isEmpty()) {
+            for (EnemyShip destroyedShip : targetEnemyShips) {
+                addScore += destroyedShip.getPointValue();
+                addShipsDestroyed++;
+                enemyShipFormation.destroy(destroyedShip);
+            }
+        }
+
+        return new SimpleEntry<>(addScore, addShipsDestroyed);
+    }
 
     public Entry<Integer, Integer> operateLineBomb() {
         int addScore = 0;
         int addShipsDestroyed = 0;
 
         List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
+
         int targetRow = -1;
         int maxCnt = -1;
 
