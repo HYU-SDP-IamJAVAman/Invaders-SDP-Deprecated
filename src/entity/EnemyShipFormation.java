@@ -191,7 +191,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 			this.shootingCooldown.reset();
 		}
 
-		cleanUp();
+		adjustFormationBounds();
 
 		int movementX = 0;
 		int movementY = 0;
@@ -271,9 +271,9 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	}
 
 	/**
-	 * Cleans columns where all elements are null, adjusts the width and height of the formation.
+	 * Adjusts the width and height of the formation.
 	 */
-	private void cleanUp() {
+	private void adjustFormationBounds() {
 		int maxColumn = 0;
 		int minPositionY = Integer.MAX_VALUE;
 
