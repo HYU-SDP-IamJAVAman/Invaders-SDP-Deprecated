@@ -1,15 +1,12 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Iterator;
 
-import engine.Cooldown;
-import engine.Core;
-import engine.GameSettings;
-import engine.GameState;
+import engine.*;
 import entity.*;
 
 /**
@@ -68,14 +65,11 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
-	private Item item = new Item();
+	private Set<Barrier> barriers;
 
-	private boolean isGhostOn = false;
+	private ItemManager itemManager;
 
-	private boolean isMultiShotOn = false;
-
-	private List<List<EnemyShip>> enemyShips;
-
+	private Set<ItemBox> itemBoxes;
     /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
@@ -125,8 +119,11 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+		this.itemBoxes = new HashSet<ItemBox>();
+		this.barriers = new HashSet<Barrier>();
 
-		enemyShips = this.enemyShipFormation.getEnemyShips();
+        // TODO
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -174,12 +171,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets, isMultiShotOn))
-						if (isMultiShotOn) {
-							this.bulletsShot += 2;
-						} else {
-							this.bulletsShot++;
-						}
+					if (this.ship.shoot(this.bullets, itemManager.getShotNum()))
+						this.bulletsShot += itemManager.getShotNum();
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -201,9 +194,14 @@ public class GameScreen extends Screen {
 				this.logger.info("The special ship has escaped");
 			}
 
-			this.ship.update();
-			this.enemyShipFormation.update();
-			this.enemyShipFormation.shoot(this.bullets);
+			if (itemManager.isTimeStopActive()) {
+				this.ship.update();
+			}
+			else {
+				this.ship.update();
+				this.enemyShipFormation.update();
+				this.enemyShipFormation.shoot(this.bullets);
+			}
 		}
 
 		manageCollisions();
@@ -214,7 +212,6 @@ public class GameScreen extends Screen {
 				&& !this.levelFinished) {
 			this.levelFinished = true;
 			this.screenFinishedCooldown.reset();
-			this.isMultiShotOn = false;
 		}
 
 		if (this.levelFinished && this.screenFinishedCooldown.checkFinished())
@@ -237,9 +234,20 @@ public class GameScreen extends Screen {
 
 		enemyShipFormation.draw();
 
+		// TODO
+		for(ItemBox itemBox : this.itemBoxes) {
+			drawManager.drawEntity(itemBox, itemBox.getPositionX(), itemBox.getPositionY());
+		}
+
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
+
+		for (Barrier barrier : this.barriers) {
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
+		}
+
+
 
 		// Interface.
 		drawManager.drawScore(this, this.score);
@@ -284,7 +292,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !isGhostOn) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -293,43 +301,43 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
+				if(this.barriers!=null) {
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while (barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
 			} else {
-                int destroyVerticalValue = -1;
-                int destroyShipHorizonalValue = -1;
-                for(int i=0 ; i<enemyShips.size(); i++){
-                    for(int j=0 ; j< enemyShips.get(i).size(); j++){
-                        EnemyShip enemyShip = enemyShips.get(i).get(j);
-                        if (!enemyShip.isDestroyed()
-                                && checkCollision(bullet, enemyShip)) {
-                            this.score += enemyShip.getPointValue();
-                            this.shipsDestroyed++;
-                            this.enemyShipFormation.destroy(enemyShip);
-                            destroyVerticalValue = i;
-                            destroyShipHorizonalValue = j;
-                            recyclable.add(bullet);
-                            item.itemActivate();
-                            if (item.isGhostAction) {
-                                isGhostOn = true;
-                                this.ship.setColor(Color.DARK_GRAY);
-                                new Thread(() -> {
-                                    try {
-                                        Thread.sleep(3000);  // 3초 후 고스트 모드 해제
-                                        isGhostOn = false;
-                                        this.ship.setColor(Color.GREEN);
-                                        item.setIsGhostActive();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }).start();
-                            } else if (item.isMultiShotActivated) {
-                                isMultiShotOn = true;
-                            }
-                            else if (item.isLineBombActivated){
-                                operateLineBomb(enemyShip, destroyVerticalValue,destroyShipHorizonalValue, recyclable, bullet);
-                            }
-                        }
-                    }
-                }
+				for (EnemyShip enemyShip : this.enemyShipFormation)
+					if (!enemyShip.isDestroyed()
+							&& checkCollision(bullet, enemyShip)) {
+						this.score += enemyShip.getPointValue();
+						this.shipsDestroyed++;
+						this.enemyShipFormation.destroy(enemyShip);
+						recyclable.add(bullet);
+
+						if (itemManager.dropItem()) {
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(newItemBox);
+							new Thread(() -> {
+								try {
+									Thread.sleep(100);
+									newItemBox.appearRightNow = false;
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
+						} else {
+							break;
+						}
+					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
@@ -339,24 +347,40 @@ public class GameScreen extends Screen {
 					this.enemyShipSpecialExplosionCooldown.reset();
 					recyclable.add(bullet);
 				}
+
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								itemManager.operateBomb();
+								break;
+							case LineBomb:
+								Entry<Integer, Integer> result = itemManager.operateLineBomb();
+								this.score += result.getKey();
+								this.shipsDestroyed += result.getValue();
+								break;
+							case Barrier:
+								itemManager.operateBarrier(barriers);
+								break;
+							case Ghost:
+								itemManager.operateGhost();
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
+					}
+            	}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
-	}
-
-	private void operateLineBomb(EnemyShip enemyShip, int column, int row , Set<Bullet> recyclable, Bullet bullet) {
-		            for(int i=0 ; i<enemyShips.size() ;i++){
-						if(i != column) continue;
-						for(int j=0 ; j<enemyShips.get(i).size(); j++){
-							if(j == row) continue;
-							enemyShip = enemyShips.get(i).get(j);
-								this.enemyShipFormation.destroy(enemyShip);
-								this.score += enemyShip.getPointValue();
-								this.shipsDestroyed++;
-								recyclable.add(bullet);
-						}
-					}
-		System.out.println("OperatingLineBomb!");
 	}
 
 	/**
