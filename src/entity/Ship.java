@@ -66,20 +66,30 @@ public class Ship extends Entity {
 	 *            List of bullets on screen, to add the new bullet.
 	 * @return Checks if the bullet was shot correctly.
 	 */
-	public final boolean shoot(final Set<Bullet> bullets, boolean isMultiShotOn) {
-		if (this.shootingCooldown.checkFinished() && !isMultiShotOn) {
+	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
+		if (this.shootingCooldown.checkFinished()) {
 			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY, BULLET_SPEED));
-			return true;
-		} else if(this.shootingCooldown.checkFinished() && isMultiShotOn) {
-			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY, BULLET_SPEED));
-			bullets.add(BulletPool.getBullet(positionX,
-					positionY, BULLET_SPEED));
-			return true;
+			if (shotNum == 1) {
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, BULLET_SPEED));
+				return true;
+			} else if(shotNum == 2) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, BULLET_SPEED));
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, BULLET_SPEED));
+				return true;
+			} else if(shotNum == 3) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, BULLET_SPEED));
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, BULLET_SPEED));
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, BULLET_SPEED));
+				return true;
+			}
 		}
+
 		return false;
 	}
 
