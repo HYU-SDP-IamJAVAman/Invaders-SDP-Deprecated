@@ -274,7 +274,6 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	 * Cleans columns where all elements are null, adjusts the width and height of the formation.
 	 */
 	private void cleanUp() {
-		Set<Integer> emptyColumns = new HashSet<Integer>();
 		int maxColumn = 0;
 		int minPositionY = Integer.MAX_VALUE;
 
@@ -304,16 +303,6 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 				maxColumn = Math.max(maxColumn, columnSize);
 				minPositionY = Math.min(minPositionY, firstNonNullShip.getPositionY());
 			}
-
-			else {
-				// Remove columns that all ships are null
-				emptyColumns.add(i);
-			}
-		}
-
-		for (int index : emptyColumns) {
-			this.enemyShips.remove(index);
-			logger.info("Removed column " + index);
 		}
 
 		int leftMostPoint = 0;
