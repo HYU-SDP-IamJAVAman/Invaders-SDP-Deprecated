@@ -185,9 +185,11 @@ public class ItemManager {
         if (targetRow != -1) {
             List<EnemyShip> destroyList = new ArrayList<>(enemyships.get(targetRow));
             for (EnemyShip destroyedShip : destroyList) {
-                addScore += destroyedShip.getPointValue();
-                addShipsDestroyed++;
-                enemyShipFormation.destroy(destroyedShip);
+                if (destroyedShip != null && !destroyedShip.isDestroyed()) {
+                    addScore += destroyedShip.getPointValue();
+                    addShipsDestroyed++;
+                    enemyShipFormation.destroy(destroyedShip);
+                }
             }
         }
 
