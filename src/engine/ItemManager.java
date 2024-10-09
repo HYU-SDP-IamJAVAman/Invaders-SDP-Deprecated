@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Manages item logic
@@ -19,7 +20,7 @@ import java.util.Random;
  */
 
 public class ItemManager {
-    private static final int ITEM_DROP_PROBABILITY = 99;
+    private static final int ITEM_DROP_PROBABILITY = 20;
 
     private ItemType itemType;
     private boolean timeStopActive;
