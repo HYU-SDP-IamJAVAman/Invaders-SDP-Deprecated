@@ -65,6 +65,8 @@ public class GameScreen extends Screen {
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
 
+	private Set<Barrier> barriers;
+
 	private ItemManager itemManager;
 
 	private Set<ItemBox> itemBoxes;
@@ -118,6 +120,7 @@ public class GameScreen extends Screen {
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
 		this.itemBoxes = new HashSet<ItemBox>();
+		this.barriers = new HashSet<Barrier>();
 
         // TODO
 		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
@@ -240,6 +243,12 @@ public class GameScreen extends Screen {
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
 
+		for (Barrier barrier : this.barriers) {
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
+		}
+
+
+
 		// Interface.
 		drawManager.drawScore(this, this.score);
 		drawManager.drawLives(this, this.lives);
@@ -292,6 +301,19 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
+				if(this.barriers!=null) {
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while (barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
 					if (!enemyShip.isDestroyed()
@@ -342,7 +364,7 @@ public class GameScreen extends Screen {
 								this.shipsDestroyed += result.getValue();
 								break;
 							case Barrier:
-								itemManager.operateBarrier();
+								itemManager.operateBarrier(barriers);
 								break;
 							case Ghost:
 								itemManager.operateGhost();

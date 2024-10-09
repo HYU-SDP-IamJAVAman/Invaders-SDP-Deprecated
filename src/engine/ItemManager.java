@@ -3,6 +3,7 @@ package engine;
 import entity.EnemyShip;
 import entity.EnemyShipFormation;
 import entity.Ship;
+import entity.Barrier;
 
 import java.awt.*;
 import java.util.*;
@@ -133,7 +134,18 @@ public class ItemManager {
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
-    public void operateBarrier() {}
+    public void operateBarrier(Set<Barrier> barriers) {
+
+        int screenWidth = 448;
+        int middle = screenWidth / 2 - 39;
+        int range = 150;
+        barriers.clear();
+
+        barriers.add(new Barrier(middle, 400));
+        barriers.add(new Barrier(middle - range, 400));
+        barriers.add(new Barrier(middle + range, 400));
+
+    }
 
     public void operateGhost() {
         this.ghostActive = true;

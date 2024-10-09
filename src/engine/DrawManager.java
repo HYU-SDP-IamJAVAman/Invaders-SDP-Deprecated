@@ -76,6 +76,8 @@ public final class DrawManager {
 		EnemyShipSpecial,
 		/** Destroyed enemy ship. */
 		Explosion,
+		/** Barrier. */
+		Barrier,
 		/** Item Box. */
 		ItemBox
 	};
@@ -103,6 +105,7 @@ public final class DrawManager {
 			spriteMap.put(SpriteType.EnemyShipC2, new boolean[12][8]);
 			spriteMap.put(SpriteType.EnemyShipSpecial, new boolean[16][7]);
 			spriteMap.put(SpriteType.Explosion, new boolean[13][7]);
+			spriteMap.put(SpriteType.Barrier, new boolean[39][11]);
 			spriteMap.put(SpriteType.ItemBox, new boolean[7][7]);
 
 			fileManager.loadSprite(spriteMap);
