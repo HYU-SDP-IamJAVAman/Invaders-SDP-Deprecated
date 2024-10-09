@@ -1,5 +1,6 @@
 package screen;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -309,12 +310,9 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
-				// 배리어와 총알이 충돌했을 때
 				if(this.barriers != null) {
-					// Iterator를 사용하여 barriers를 순회하면서 충돌했는지 확인
-					// hasNext()을 사용하지 않으면 ConcurrentModificationException 발생
 					Iterator<Barrier> barrierIterator = this.barriers.iterator();
-					while(barrierIterator.hasNext()) {
+					while (barrierIterator.hasNext()) {
 						Barrier barrier = barrierIterator.next();
 						if (checkCollision(bullet, barrier)) {
 							recyclable.add(bullet);
@@ -325,7 +323,6 @@ public class GameScreen extends Screen {
 						}
 					}
 				}
-
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
 					if (!enemyShip.isDestroyed()
@@ -377,6 +374,37 @@ public class GameScreen extends Screen {
 								break;
 							case Barrier:
 								itemManager.operateBarrier();
+								break;
+							case Ghost:
+								itemManager.operateGhost();
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
+					}
+            	}
+
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								itemManager.operateBomb();
+								break;
+							case LineBomb:
+								Entry<Integer, Integer> result = itemManager.operateLineBomb();
+								this.score += result.getKey();
+								this.shipsDestroyed += result.getValue();
+								break;
+							case Barrier:
+								itemManager.operateBarrier(barriers);
 								break;
 							case Ghost:
 								itemManager.operateGhost();
