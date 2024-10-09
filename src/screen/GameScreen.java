@@ -1,13 +1,11 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import engine.*;
 import entity.*;
@@ -375,7 +373,7 @@ public class GameScreen extends Screen {
 								this.shipsDestroyed += lineBombResult.getValue();
 								break;
 							case Barrier:
-								itemManager.operateBarrier();
+								itemManager.operateBarrier(this.barriers);
 								break;
 							case Ghost:
 								itemManager.operateGhost();
