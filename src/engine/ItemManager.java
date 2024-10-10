@@ -167,27 +167,29 @@ public class ItemManager {
 
         List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
 
-        int targetRow = -1;
-        int maxCnt = -1;
+        int destroyRow = -1;
 
         for (int i = 0; i < enemyships.size(); i++) {
-            int aliveCnt = 0;
             for (int j = 0; j < enemyships.get(i).size(); j++) {
-                if (enemyships.get(i).get(j) != null && !enemyships.get(i).get(j).isDestroyed()) {
-                    aliveCnt++;
+                if(enemyships.get(i).get(j) != null){
+                    destroyRow = Math.max(destroyRow, j);
                 }
-            }
-
-            if (aliveCnt > maxCnt) {
-                maxCnt = aliveCnt;
-                targetRow = i;
             }
         }
 
-        if (targetRow != -1) {
-            List<EnemyShip> destroyList = new ArrayList<>(enemyships.get(targetRow));
+        if(destroyRow != -1){
+            List<EnemyShip> destroyList = new ArrayList<>();
+
+            for(int i=0 ; i<enemyships.size() ;i++){
+                for (int j = 0; j < enemyships.get(i).size(); j++) {
+                    if(enemyships.get(i).get(j) != null && j == destroyRow){
+                        destroyList.add(enemyships.get(i).get(j));
+                    }
+                }
+            }
+
             for (EnemyShip destroyedShip : destroyList) {
-                if (destroyedShip != null && !destroyedShip.isDestroyed()) {
+                if (!destroyedShip.isDestroyed()) {
                     addScore += destroyedShip.getPointValue();
                     addShipsDestroyed++;
                     enemyShipFormation.destroy(destroyedShip);
