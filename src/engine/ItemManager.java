@@ -6,12 +6,10 @@ import entity.Ship;
 import entity.Barrier;
 
 import java.awt.*;
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Random;
 import java.util.Set;
 
@@ -167,30 +165,30 @@ public class ItemManager {
         int addScore = 0;
         int addShipsDestroyed = 0;
 
-        List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
+        List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
 
         int destroyRow = -1;
 
-        for (int i = 0; i < enemyships.size(); i++) {
-            for (int j = 0; j < enemyships.get(i).size(); j++) {
-                if(enemyships.get(i).get(j) != null){
+        for (int i = 0; i < enemyShips.size(); i++) {
+            for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                if(enemyShips.get(i).get(j) != null){
                     destroyRow = Math.max(destroyRow, j);
                 }
             }
         }
 
         if(destroyRow != -1){
-            List<EnemyShip> destroyList = new ArrayList<>();
+            List<EnemyShip> destroyShipList = new ArrayList<>();
 
-            for(int i=0 ; i<enemyships.size() ;i++){
-                for (int j = 0; j < enemyships.get(i).size(); j++) {
-                    if(enemyships.get(i).get(j) != null && j == destroyRow){
-                        destroyList.add(enemyships.get(i).get(j));
+            for(int i = 0; i< enemyShips.size() ; i++){
+                for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                    if(enemyShips.get(i).get(j) != null && j == destroyRow){
+                        destroyShipList.add(enemyShips.get(i).get(j));
                     }
                 }
             }
 
-            for (EnemyShip destroyedShip : destroyList) {
+            for (EnemyShip destroyedShip : destroyShipList) {
                 if (!destroyedShip.isDestroyed()) {
                     addScore += destroyedShip.getPointValue();
                     addShipsDestroyed++;
