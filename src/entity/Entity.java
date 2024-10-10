@@ -52,7 +52,7 @@ public class Entity {
 		this.color = color;
 	}
 	/**
-	 * Getter for the color of the entity.
+	 * Setter for the color of the entity.
 	 * 
 	 * @return Color of the entity, used when drawing it.
 	 */
