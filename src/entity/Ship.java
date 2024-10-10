@@ -133,15 +133,37 @@ public abstract class Ship extends Entity {
 	 *            List of bullets on screen, to add the new bullet.
 	 * @return Checks if the bullet was shot correctly.
 	 */
-	public final boolean shoot(final Set<Bullet> bullets) {
+	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
 		if (this.shootingCooldown.checkFinished()) {
 			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY,  this.getBulletSpeed()));
-			soundManager.playSound(Sound.PLAYER_LASER);
-      this.lastShootTime = System.currentTimeMillis();
-			return true;
+			this.lastShootTime = System.currentTimeMillis();
+			if (shotNum == 1) {
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			} else if(shotNum == 2) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			} else if(shotNum == 3) {
+				bullets.add(BulletPool.getBullet(positionX + this.width,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
+						positionY, this.getBulletSpeed()));
+                soundManager.playSound(Sound.PLAYER_LASER);
+				return true;
+			}
 		}
+
 		return false;
 	}
 

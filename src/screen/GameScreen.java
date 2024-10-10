@@ -3,15 +3,14 @@ package screen;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
-
-
 
 
 import engine.*;
@@ -111,12 +110,20 @@ public class GameScreen extends Screen {
 	/** Singleton instance of SoundManager */
 	private final SoundManager soundManager = SoundManager.getInstance();
 
+	private List<List<EnemyShip>> enemyShips;
+
+	private Set<Barrier> barriers;
+
+	private ItemManager itemManager;
+
+	private Set<ItemBox> itemBoxes;
 
 
 	private int MAX_BLOCKERS = 0;
 
 	private GameState gameState;
-	/**
+
+    /**
 	 * Constructor, establishes the properties of the screen.
 	 * 
 	 * @param gameState
@@ -223,6 +230,11 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+		this.barriers = new HashSet<Barrier>();
+        this.itemBoxes = new HashSet<ItemBox>();
+
+        // TODO
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -290,11 +302,9 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets))
-						this.bulletsShot++;
+					if (this.ship.shoot(this.bullets, itemManager.getShotNum()))
+						this.bulletsShot += itemManager.getShotNum();
 				boolean conti;
-
-
 
 				for(int i = 0; i < web.size(); i++) {
 					//escape Spider Web
@@ -349,9 +359,14 @@ public class GameScreen extends Screen {
 			}
 
 			this.ship.update();
-			this.enemyShipFormation.update();
-			this.enemyShipFormation.shoot(this.bullets, this.level);
-			 if (level >= 3) {//Events where vision obstructions appear start from level 3 onwards.
+
+			if (!itemManager.isTimeStopActive()) {
+				this.ship.update();
+				this.enemyShipFormation.update();
+				this.enemyShipFormation.shoot(this.bullets);
+			}
+
+			if (level >= 3) { //Events where vision obstructions appear start from level 3 onwards.
 				handleBlockerAppearance();
 			}
 		}
@@ -406,11 +421,19 @@ public class GameScreen extends Screen {
 
 		enemyShipFormation.draw();
 
+		// TODO
+		for(ItemBox itemBox : this.itemBoxes) {
+			drawManager.drawEntity(itemBox, itemBox.getPositionX(), itemBox.getPositionY());
+		}
+
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
 
+		for (Barrier barrier : this.barriers)
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
 
+		// Interface.
 		drawManager.drawScore(this, this.score);
 		drawManager.drawElapsedTime(this, this.elapsedTime);
 		drawManager.drawAlertMessage(this, this.alertMessage);
@@ -540,7 +563,7 @@ public class GameScreen extends Screen {
 
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -551,9 +574,24 @@ public class GameScreen extends Screen {
 					}
 
 
+					}
+				}
+				if(this.barriers != null) {
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while (barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
+					if (enemyShip != null && !enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
 						if (combo >= 5)
 							this.score += enemyShip.getPointValue() * (combo / 5 + 1);
@@ -565,6 +603,21 @@ public class GameScreen extends Screen {
 						timer.cancel();
 						isExecuted = false;
 						recyclable.add(bullet);
+
+						if (itemManager.dropItem()) {
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(newItemBox);
+							new Thread(() -> {
+								try {
+									Thread.sleep(100);
+									newItemBox.appearRightNow = false;
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
+						} else {
+							break;
+						}
 					}
 
 				if (this.enemyShipSpecial != null
@@ -583,6 +636,39 @@ public class GameScreen extends Screen {
 
 					recyclable.add(bullet);
 
+				}
+
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								Entry<Integer, Integer> bombResult = itemManager.operateBomb();
+								this.score += bombResult.getKey();
+								this.shipsDestroyed += bombResult.getValue();
+								break;
+							case LineBomb:
+								Entry<Integer, Integer> lineBombResult = itemManager.operateLineBomb();
+								this.score += lineBombResult.getKey();
+								this.shipsDestroyed += lineBombResult.getValue();
+								break;
+							case Barrier:
+								itemManager.operateBarrier(this.barriers);
+								break;
+							case Ghost:
+								itemManager.operateGhost();
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
+					}
 				}
 					//check the collision between the obstacle and the bullet
 					for (Block block : this.block) {
