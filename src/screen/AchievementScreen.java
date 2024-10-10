@@ -6,6 +6,8 @@ import java.util.List;
 
 import engine.Core;
 import engine.Score;
+import engine.Sound;
+import engine.SoundManager;
 
 /**
  * Implements the high scores screen, it shows player records.
@@ -13,10 +15,12 @@ import engine.Score;
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
  * 
  */
-public class HighScoreScreen extends Screen {
+public class AchievementScreen extends Screen {
 
 	/** List of past high scores. */
 	private List<Score> highScores;
+	/** Singleton instance of SoundManager */
+	private final SoundManager soundManager = SoundManager.getInstance();
 
 	/**
 	 * Constructor, establishes the properties of the screen.
@@ -28,7 +32,7 @@ public class HighScoreScreen extends Screen {
 	 * @param fps
 	 *            Frames per second, frame rate at which the game is run.
 	 */
-	public HighScoreScreen(final int width, final int height, final int fps) {
+	public AchievementScreen(final int width, final int height, final int fps) {
 		super(width, height, fps);
 
 		this.returnCode = 1;
@@ -59,8 +63,10 @@ public class HighScoreScreen extends Screen {
 
 		draw();
 		if (inputManager.isKeyDown(KeyEvent.VK_SPACE)
-				&& this.inputDelay.checkFinished())
+				&& this.inputDelay.checkFinished()) {
 			this.isRunning = false;
+			soundManager.playSound(Sound.MENU_BACK);
+		}
 	}
 
 	/**
@@ -69,7 +75,7 @@ public class HighScoreScreen extends Screen {
 	private void draw() {
 		drawManager.initDrawing(this);
 
-		drawManager.drawHighScoreMenu(this);
+		drawManager.drawAchievementMenu(this);
 		drawManager.drawHighScores(this, this.highScores);
 
 		drawManager.completeDrawing(this);

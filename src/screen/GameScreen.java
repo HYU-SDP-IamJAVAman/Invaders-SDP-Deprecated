@@ -1,15 +1,14 @@
 package screen;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Iterator;
+import java.util.List;
 
 import engine.*;
 import entity.*;
-import engine.ItemManager.ItemType;
 
 /**
  * Implements the game screen, where the action happens.
@@ -66,8 +65,13 @@ public class GameScreen extends Screen {
 	private boolean levelFinished;
 	/** Checks if a bonus life is received. */
 	private boolean bonusLife;
+	private Wallet wallet;
+	/** Singleton instance of SoundManager */
+	private final SoundManager soundManager = SoundManager.getInstance();
 
 	private List<List<EnemyShip>> enemyShips;
+
+	private Set<Barrier> barriers;
 
 	private ItemManager itemManager;
 
@@ -90,7 +94,7 @@ public class GameScreen extends Screen {
 	 */
 	public GameScreen(final GameState gameState,
 			final GameSettings gameSettings, final boolean bonusLife,
-			final int width, final int height, final int fps) {
+			final int width, final int height, final int fps, final Wallet wallet) {
 		super(width, height, fps);
 
 		this.gameSettings = gameSettings;
@@ -102,6 +106,8 @@ public class GameScreen extends Screen {
 			this.lives++;
 		this.bulletsShot = gameState.getBulletsShot();
 		this.shipsDestroyed = gameState.getShipsDestroyed();
+		this.wallet = wallet;
+
 	}
 
 	/**
@@ -113,6 +119,7 @@ public class GameScreen extends Screen {
 		enemyShipFormation = new EnemyShipFormation(this.gameSettings);
 		enemyShipFormation.attach(this);
 		this.ship = new Ship(this.width / 2, this.height - 30);
+		ship.applyItem(wallet);
 		// Appears each 10-30 seconds.
 		this.enemyShipSpecialCooldown = Core.getVariableCooldown(
 				BONUS_SHIP_INTERVAL, BONUS_SHIP_VARIANCE);
@@ -121,16 +128,17 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
-		this.itemBoxes = new HashSet<ItemBox>();
+		this.barriers = new HashSet<Barrier>();
+        this.itemBoxes = new HashSet<ItemBox>();
 
         // TODO
-		enemyShips = this.enemyShipFormation.getEnemyShips();
-		this.itemManager = new ItemManager();
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
 		this.inputDelay = Core.getCooldown(INPUT_DELAY);
 		this.inputDelay.reset();
+		soundManager.playSound(Sound.COUNTDOWN);
 	}
 
 	/**
@@ -142,6 +150,7 @@ public class GameScreen extends Screen {
 		super.run();
 
 		this.score += LIFE_SCORE * (this.lives - 1);
+		if(this.lives == 0) this.score += 100;
 		this.logger.info("Screen cleared with a score of " + this.score);
 
 		return this.returnCode;
@@ -196,9 +205,14 @@ public class GameScreen extends Screen {
 				this.logger.info("The special ship has escaped");
 			}
 
-			this.ship.update();
-			this.enemyShipFormation.update();
-			this.enemyShipFormation.shoot(this.bullets);
+			if (itemManager.isTimeStopActive()) {
+				this.ship.update();
+			}
+			else {
+				this.ship.update();
+				this.enemyShipFormation.update();
+				this.enemyShipFormation.shoot(this.bullets);
+			}
 		}
 
 		manageCollisions();
@@ -239,6 +253,9 @@ public class GameScreen extends Screen {
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
+
+		for (Barrier barrier : this.barriers)
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
 
 		// Interface.
 		drawManager.drawScore(this, this.score);
@@ -283,7 +300,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGoastActive()) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -292,9 +309,22 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
+				if(this.barriers != null) {
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while (barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
+					if (enemyShip != null && !enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
 						this.score += enemyShip.getPointValue();
 						this.shipsDestroyed++;
@@ -334,16 +364,20 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 						switch (itemManager.selectItemType()) {
 							case Bomb:
-								itemManager.operateBomb();
+								Entry<Integer, Integer> bombResult = itemManager.operateBomb();
+								this.score += bombResult.getKey();
+								this.shipsDestroyed += bombResult.getValue();
 								break;
 							case LineBomb:
-								itemManager.operateLineBomb(this.enemyShips,recyclable, bullet, this.shipsDestroyed, this.score, this.enemyShipFormation);
+								Entry<Integer, Integer> lineBombResult = itemManager.operateLineBomb();
+								this.score += lineBombResult.getKey();
+								this.shipsDestroyed += lineBombResult.getValue();
 								break;
 							case Barrier:
-								itemManager.operateBarrier();
+								itemManager.operateBarrier(this.barriers);
 								break;
-							case Goast:
-								itemManager.operateGoast(this.ship);
+							case Ghost:
+								itemManager.operateGhost();
 								break;
 							case TimeStop:
 								itemManager.operateTimeStop();
@@ -353,7 +387,7 @@ public class GameScreen extends Screen {
 								break;
 						}
 					}
-            	}
+				}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);

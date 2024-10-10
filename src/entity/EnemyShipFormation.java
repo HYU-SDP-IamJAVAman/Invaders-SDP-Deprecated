@@ -1,24 +1,17 @@
 package entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
+import engine.*;
 import screen.Screen;
-import engine.Cooldown;
-import engine.Core;
-import engine.DrawManager;
 import engine.DrawManager.SpriteType;
-import engine.GameSettings;
 
 /**
  * Groups enemy ships into a formation that moves together.
- * 
+ *
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
- * 
+ *
  */
 public class EnemyShipFormation implements Iterable<EnemyShip> {
 
@@ -55,6 +48,8 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	private Logger logger;
 	/** Screen to draw ships on. */
 	private Screen screen;
+	/** Singleton instance of SoundManager */
+	private final SoundManager soundManager = SoundManager.getInstance();
 
 	/** List of enemy ships forming the formation. */
 	private List<List<EnemyShip>> enemyShips;
@@ -107,7 +102,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Constructor, sets the initial conditions.
-	 * 
+	 *
 	 * @param gameSettings
 	 *            Current game settings.
 	 */
@@ -146,7 +141,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 				else
 					spriteType = SpriteType.EnemyShipA1;
 
-				column.add(new EnemyShip((SEPARATION_DISTANCE 
+				column.add(new EnemyShip((SEPARATION_DISTANCE
 						* this.enemyShips.indexOf(column))
 								+ positionX, (SEPARATION_DISTANCE * i)
 								+ positionY, spriteType));
@@ -168,7 +163,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Associates the formation to a given screen.
-	 * 
+	 *
 	 * @param newScreen
 	 *            Screen to attach.
 	 */
@@ -182,8 +177,8 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	public final void draw() {
 		for (List<EnemyShip> column : this.enemyShips)
 			for (EnemyShip enemyShip : column)
-				drawManager.drawEntity(enemyShip, enemyShip.getPositionX(),
-						enemyShip.getPositionY());
+				if (enemyShip != null)
+				    drawManager.drawEntity(enemyShip, enemyShip.getPositionX(), enemyShip.getPositionY());
 	}
 
 	/**
@@ -195,8 +190,8 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 					shootingVariance);
 			this.shootingCooldown.reset();
 		}
-		
-		cleanUp();
+
+		adjustFormationBounds();
 
 		int movementX = 0;
 		int movementY = 0;
@@ -205,7 +200,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 		this.movementSpeed = (int) (Math.pow(remainingProportion, 2)
 				* this.baseSpeed);
 		this.movementSpeed += MINIMUM_SPEED;
-		
+
 		movementInterval++;
 		if (movementInterval >= this.movementSpeed) {
 			movementInterval = 0;
@@ -259,61 +254,80 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 			positionY += movementY;
 
 			// Cleans explosions.
-			List<EnemyShip> destroyed;
-			for (List<EnemyShip> column : this.enemyShips) {
-				destroyed = new ArrayList<EnemyShip>();
-				for (EnemyShip ship : column) {
-					if (ship != null && ship.isDestroyed()) {
-						destroyed.add(ship);
-						this.logger.info("Removed enemy "
-								+ column.indexOf(ship) + " from column "
-								+ this.enemyShips.indexOf(column));
+			for (int i = 0; i < this.enemyShips.size(); i++)
+				for (int j = 0; j < this.enemyShips.get(i).size(); j++)
+					if (this.enemyShips.get(i).get(j) != null && this.enemyShips.get(i).get(j).isDestroyed()) {
+						this.logger.info("Removed enemy " + j + " from column " + i);
+						this.enemyShips.get(i).set(j, null);
 					}
-				}
-				column.removeAll(destroyed);
-			}
 
 			for (List<EnemyShip> column : this.enemyShips)
-				for (EnemyShip enemyShip : column) {
-					enemyShip.move(movementX, movementY);
-					enemyShip.update();
-				}
+				for (EnemyShip enemyShip : column)
+					if (enemyShip != null) {
+						enemyShip.move(movementX, movementY);
+						enemyShip.update();
+					}
 		}
 	}
 
 	/**
-	 * Cleans empty columns, adjusts the width and height of the formation.
+	 * Adjusts the width and height of the formation.
 	 */
-	private void cleanUp() {
-		Set<Integer> emptyColumns = new HashSet<Integer>();
+	private void adjustFormationBounds() {
 		int maxColumn = 0;
 		int minPositionY = Integer.MAX_VALUE;
-		for (List<EnemyShip> column : this.enemyShips) {
-			if (!column.isEmpty()) {
-				// Height of this column
-				int columnSize = column.get(column.size() - 1).positionY
-						- this.positionY + this.shipHeight;
+
+		for (int i = 0; i < this.enemyShips.size(); i++) {
+			List<EnemyShip> column = this.enemyShips.get(i);
+
+			// Check whether every ship is null
+			boolean allNull = column.stream().allMatch(Objects::isNull);
+
+			if (!allNull) {
+				// Find non-null elements only
+				EnemyShip firstNonNullShip = null;
+				EnemyShip lastNonNullShip = null;
+
+				// Find the first and last non-null elements in the column
+				for (EnemyShip ship : column) {
+					if (ship != null) {
+						if (firstNonNullShip == null) {
+							firstNonNullShip = ship;
+						}
+						lastNonNullShip = ship;
+					}
+				}
+
+				// Calculate the height of this column
+				int columnSize = lastNonNullShip.getPositionY() - this.positionY + this.shipHeight;
 				maxColumn = Math.max(maxColumn, columnSize);
-				minPositionY = Math.min(minPositionY, column.get(0)
-						.getPositionY());
-			} else {
-				// Empty column, we remove it.
-				emptyColumns.add(this.enemyShips.indexOf(column));
+				minPositionY = Math.min(minPositionY, firstNonNullShip.getPositionY());
 			}
-		}
-		for (int index : emptyColumns) {
-			this.enemyShips.remove(index);
-			logger.info("Removed column " + index);
 		}
 
 		int leftMostPoint = 0;
 		int rightMostPoint = 0;
-		
+
 		for (List<EnemyShip> column : this.enemyShips) {
+			// Skip empty or all-null columns
 			if (!column.isEmpty()) {
-				if (leftMostPoint == 0)
-					leftMostPoint = column.get(0).getPositionX();
-				rightMostPoint = column.get(0).getPositionX();
+				EnemyShip firstNonNullShip = null;
+
+				// Find the first non-null ship in the column
+				for (EnemyShip ship : column) {
+					if (ship != null) {
+						firstNonNullShip = ship;
+						break; // We only need the first non-null element
+					}
+				}
+
+				// Perform calculations only if a non-null ship is found
+				if (firstNonNullShip != null) {
+					if (leftMostPoint == 0) {
+						leftMostPoint = firstNonNullShip.getPositionX();
+					}
+					rightMostPoint = firstNonNullShip.getPositionX();
+				}
 			}
 		}
 
@@ -326,7 +340,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Shoots a bullet downwards.
-	 * 
+	 *
 	 * @param bullets
 	 *            Bullets set to add the bullet being shot.
 	 */
@@ -339,19 +353,20 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 			this.shootingCooldown.reset();
 			bullets.add(BulletPool.getBullet(shooter.getPositionX()
 					+ shooter.width / 2, shooter.getPositionY(), BULLET_SPEED));
+			soundManager.playSound(Sound.ALIEN_LASER);
 		}
 	}
 
 	/**
 	 * Destroys a ship.
-	 * 
+	 *
 	 * @param destroyedShip
 	 *            Ship to be destroyed.
 	 */
 	public final void destroy(final EnemyShip destroyedShip) {
 		for (List<EnemyShip> column : this.enemyShips)
 			for (int i = 0; i < column.size(); i++)
-				if (column.get(i).equals(destroyedShip)) {
+				if (column.get(i) != null && column.get(i).equals(destroyedShip)) {
 					column.get(i).destroy();
 					this.logger.info("Destroyed ship in ("
 							+ this.enemyShips.indexOf(column) + "," + i + ")");
@@ -385,7 +400,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Gets the ship on a given column that will be in charge of shooting.
-	 * 
+	 *
 	 * @param column
 	 *            Column to search.
 	 * @return New shooter ship.
@@ -404,7 +419,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Returns an iterator over the ships in the formation.
-	 * 
+	 *
 	 * @return Iterator over the enemy ships.
 	 */
 	@Override
@@ -420,7 +435,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 
 	/**
 	 * Checks if there are any ships remaining.
-	 * 
+	 *
 	 * @return True when all ships have been destroyed.
 	 */
 	public final boolean isEmpty() {
