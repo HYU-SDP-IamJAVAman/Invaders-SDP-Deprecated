@@ -133,15 +133,31 @@ public abstract class Ship extends Entity {
 	 *            List of bullets on screen, to add the new bullet.
 	 * @return Checks if the bullet was shot correctly.
 	 */
-	public final boolean shoot(final Set<Bullet> bullets) {
+	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
 		if (this.shootingCooldown.checkFinished()) {
+
 			this.shootingCooldown.reset();
-			bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-					positionY,  this.getBulletSpeed()));
+			this.lastShootTime = System.currentTimeMillis();
 			soundManager.playSound(Sound.PLAYER_LASER);
-      this.lastShootTime = System.currentTimeMillis();
+
+			switch (shotNum) {
+				case 1:
+					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					break;
+				case 2:
+					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
+					break;
+				case 3:
+					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					break;
+			}
+
 			return true;
 		}
+
 		return false;
 	}
 
