@@ -103,6 +103,7 @@ public class Ship extends Entity {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
