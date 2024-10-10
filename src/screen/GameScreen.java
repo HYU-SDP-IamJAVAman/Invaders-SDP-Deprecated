@@ -2,16 +2,19 @@ package screen;
 
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
 
 import engine.*;
 import entity.*;
 
 /**
  * Implements the game screen, where the action happens.
- * 
+ *
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
- * 
+ *
  */
 public class GameScreen extends Screen {
 
@@ -66,9 +69,16 @@ public class GameScreen extends Screen {
 	/** Singleton instance of SoundManager */
 	private final SoundManager soundManager = SoundManager.getInstance();
 
-	/**
+	private List<List<EnemyShip>> enemyShips;
+
+	private Set<Barrier> barriers;
+
+	private ItemManager itemManager;
+
+	private Set<ItemBox> itemBoxes;
+    /**
 	 * Constructor, establishes the properties of the screen.
-	 * 
+	 *
 	 * @param gameState
 	 *            Current game state.
 	 * @param gameSettings
@@ -118,6 +128,11 @@ public class GameScreen extends Screen {
 				.getCooldown(BONUS_SHIP_EXPLOSION);
 		this.screenFinishedCooldown = Core.getCooldown(SCREEN_CHANGE_INTERVAL);
 		this.bullets = new HashSet<Bullet>();
+		this.barriers = new HashSet<Barrier>();
+        this.itemBoxes = new HashSet<ItemBox>();
+
+        // TODO
+		this.itemManager = new ItemManager(this.ship, this.enemyShipFormation);
 
 		// Special input delay / countdown.
 		this.gameStartTime = System.currentTimeMillis();
@@ -128,7 +143,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Starts the action.
-	 * 
+	 *
 	 * @return Next screen code.
 	 */
 	public final int run() {
@@ -167,8 +182,8 @@ public class GameScreen extends Screen {
 					this.ship.moveLeft();
 				}
 				if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
-					if (this.ship.shoot(this.bullets))
-						this.bulletsShot++;
+					if (this.ship.shoot(this.bullets, itemManager.getShotNum()))
+						this.bulletsShot += itemManager.getShotNum();
 			}
 
 			if (this.enemyShipSpecial != null) {
@@ -190,9 +205,14 @@ public class GameScreen extends Screen {
 				this.logger.info("The special ship has escaped");
 			}
 
-			this.ship.update();
-			this.enemyShipFormation.update();
-			this.enemyShipFormation.shoot(this.bullets);
+			if (itemManager.isTimeStopActive()) {
+				this.ship.update();
+			}
+			else {
+				this.ship.update();
+				this.enemyShipFormation.update();
+				this.enemyShipFormation.shoot(this.bullets);
+			}
 		}
 
 		manageCollisions();
@@ -224,9 +244,17 @@ public class GameScreen extends Screen {
 
 		enemyShipFormation.draw();
 
+		// TODO
+		for(ItemBox itemBox : this.itemBoxes) {
+			drawManager.drawEntity(itemBox, itemBox.getPositionX(), itemBox.getPositionY());
+		}
+
 		for (Bullet bullet : this.bullets)
 			drawManager.drawEntity(bullet, bullet.getPositionX(),
 					bullet.getPositionY());
+
+		for (Barrier barrier : this.barriers)
+			drawManager.drawEntity(barrier, barrier.getPositionX(), barrier.getPositionY());
 
 		// Interface.
 		drawManager.drawScore(this, this.score);
@@ -271,7 +299,7 @@ public class GameScreen extends Screen {
 		Set<Bullet> recyclable = new HashSet<Bullet>();
 		for (Bullet bullet : this.bullets)
 			if (bullet.getSpeed() > 0) {
-				if (checkCollision(bullet, this.ship) && !this.levelFinished) {
+				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
 					if (!this.ship.isDestroyed()) {
 						this.ship.destroy();
@@ -280,14 +308,42 @@ public class GameScreen extends Screen {
 								+ " lives remaining.");
 					}
 				}
+				if(this.barriers != null) {
+					Iterator<Barrier> barrierIterator = this.barriers.iterator();
+					while (barrierIterator.hasNext()) {
+						Barrier barrier = barrierIterator.next();
+						if (checkCollision(bullet, barrier)) {
+							recyclable.add(bullet);
+							barrier.reduceHealth();
+							if (barrier.isDestroyed()) {
+								barrierIterator.remove();
+							}
+						}
+					}
+				}
 			} else {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
-					if (!enemyShip.isDestroyed()
+					if (enemyShip != null && !enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
 						this.score += enemyShip.getPointValue();
 						this.shipsDestroyed++;
 						this.enemyShipFormation.destroy(enemyShip);
 						recyclable.add(bullet);
+
+						if (itemManager.dropItem()) {
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							this.itemBoxes.add(newItemBox);
+							new Thread(() -> {
+								try {
+									Thread.sleep(100);
+									newItemBox.appearRightNow = false;
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}).start();
+						} else {
+							break;
+						}
 					}
 				if (this.enemyShipSpecial != null
 						&& !this.enemyShipSpecial.isDestroyed()
@@ -298,6 +354,39 @@ public class GameScreen extends Screen {
 					this.enemyShipSpecialExplosionCooldown.reset();
 					recyclable.add(bullet);
 				}
+
+				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
+				while (itemBoxIterator.hasNext()) {
+					ItemBox itemBox = itemBoxIterator.next();
+					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
+						itemBoxIterator.remove();
+						recyclable.add(bullet);
+						switch (itemManager.selectItemType()) {
+							case Bomb:
+								Entry<Integer, Integer> bombResult = itemManager.operateBomb();
+								this.score += bombResult.getKey();
+								this.shipsDestroyed += bombResult.getValue();
+								break;
+							case LineBomb:
+								Entry<Integer, Integer> lineBombResult = itemManager.operateLineBomb();
+								this.score += lineBombResult.getKey();
+								this.shipsDestroyed += lineBombResult.getValue();
+								break;
+							case Barrier:
+								itemManager.operateBarrier(this.barriers);
+								break;
+							case Ghost:
+								itemManager.operateGhost();
+								break;
+							case TimeStop:
+								itemManager.operateTimeStop();
+								break;
+							case MultiShot:
+								itemManager.operateMultiShot();
+								break;
+						}
+					}
+				}
 			}
 		this.bullets.removeAll(recyclable);
 		BulletPool.recycle(recyclable);
@@ -305,7 +394,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Checks if two entities are colliding.
-	 * 
+	 *
 	 * @param a
 	 *            First entity, the bullet.
 	 * @param b
@@ -330,7 +419,7 @@ public class GameScreen extends Screen {
 
 	/**
 	 * Returns a GameState object representing the status of the game.
-	 * 
+	 *
 	 * @return Current game state.
 	 */
 	public final GameState getGameState() {
