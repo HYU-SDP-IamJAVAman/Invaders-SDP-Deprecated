@@ -26,10 +26,12 @@ public class ItemManager {
     private ItemType itemType;
     private boolean timeStopActive;
     private boolean ghostActive;
+    /* The number of bullets fired with each shot., created for the multishot item.  */
     private int shotNum;
     private Random rand;
     private Ship ship;
     private EnemyShipFormation enemyShipFormation;
+    /* The max number of bullets fired with each shot is 3. When shotNum variable becomes 3, it turn to true.*/
     private boolean isMaxShotNum;
 
     public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation) {
@@ -238,6 +240,7 @@ public class ItemManager {
         }).start();
     }
 
+    /* Multishot item method. */
     public void operateMultiShot() {
         if (this.shotNum < 3) {
             this.shotNum++;
