@@ -48,11 +48,17 @@ public class Entity {
 		this.color = color;
 	}
 
+	/**
+	 * Setter for the color of the entity.
+	 *
+	 * @param color
+	 *            New color of the entity
+	 */
 	public void setColor(Color color) {
 		this.color = color;
 	}
 	/**
-	 * Setter for the color of the entity.
+	 * Getter for the color of the entity.
 	 * 
 	 * @return Color of the entity, used when drawing it.
 	 */
