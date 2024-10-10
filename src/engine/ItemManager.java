@@ -25,6 +25,7 @@ public class ItemManager {
 
     private ItemType itemType;
     private boolean timeStopActive;
+    /** A field variable of a boolean type to check if ghosting is on/off */
     private boolean ghostActive;
     private int shotNum;
     private Random rand;
