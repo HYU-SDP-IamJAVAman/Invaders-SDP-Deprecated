@@ -14,7 +14,7 @@ import java.awt.*;
 public class ItemBox extends Entity {
 
     /** Prevents being hit by bullets immediately after being created. */
-    public boolean appearRightNow = true;
+    private boolean appearRightNow = true;
 
     /**
      * Constructor, establishes the entity's generic properties.
@@ -26,5 +26,13 @@ public class ItemBox extends Entity {
         super(positionX, positionY, 7 * 2, 7 * 2, Color.YELLOW);
 
         this.spriteType = SpriteType.ItemBox;
+    }
+
+    public boolean isAppearRightNow() {
+        return appearRightNow;
+    }
+
+    public void setAppearRightNow(boolean appearRightNow) {
+        this.appearRightNow = appearRightNow;
     }
 }

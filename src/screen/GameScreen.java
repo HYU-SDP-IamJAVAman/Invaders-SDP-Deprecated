@@ -606,7 +606,7 @@ public class GameScreen extends Screen {
 							new Thread(() -> {
 								try {
 									Thread.sleep(100);
-									newItemBox.appearRightNow = false;
+									newItemBox.setAppearRightNow(false);
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
@@ -637,7 +637,7 @@ public class GameScreen extends Screen {
 				Iterator<ItemBox> itemBoxIterator = this.itemBoxes.iterator();
 				while (itemBoxIterator.hasNext()) {
 					ItemBox itemBox = itemBoxIterator.next();
-					if (checkCollision(bullet, itemBox) && !itemBox.appearRightNow) {
+					if (checkCollision(bullet, itemBox) && !itemBox.isAppearRightNow()) {
 						itemBoxIterator.remove();
 						recyclable.add(bullet);
 						switch (itemManager.selectItemType()) {

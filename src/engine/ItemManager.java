@@ -18,12 +18,6 @@ import java.util.Set;
  * Manages item logic
  *
  * @author Seochan Moon
- */
-
-/**
- * Manages item logic
- *
- * @author Seochan Moon
  *
  */
 

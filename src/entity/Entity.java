@@ -57,6 +57,7 @@ public class Entity {
 	public void setColor(Color color) {
 		this.color = color;
 	}
+
 	/**
 	 * Getter for the color of the entity.
 	 * 
