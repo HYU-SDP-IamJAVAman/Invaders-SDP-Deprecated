@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Manages item drop and use.
@@ -40,6 +41,8 @@ public class ItemManager {
     private final EnemyShipFormation enemyShipFormation;
     /** Set of Barriers in game screen. */
     private final Set<Barrier> barriers;
+    /** Application logger. */
+    private final Logger logger;
 
     /** Check if Time-stop is active. */
     private boolean timeStopActive;
@@ -74,6 +77,7 @@ public class ItemManager {
         this.ship = ship;
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
+        this.logger = Core.getLogger();
     }
 
     /**
@@ -106,7 +110,10 @@ public class ItemManager {
      *         If the item is non-offensive, returns null.
      */
     public Entry<Integer, Integer> useItem() {
-        return switch (selectItemType()) {
+        ItemType itemType = selectItemType();
+        logger.info(itemType + " used");
+
+        return switch (itemType) {
             case Bomb -> operateBomb();
             case LineBomb -> operateLineBomb();
             case Barrier -> operateBarrier();
