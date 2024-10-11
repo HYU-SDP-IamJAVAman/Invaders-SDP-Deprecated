@@ -611,8 +611,6 @@ public class GameScreen extends Screen {
 									e.printStackTrace();
 								}
 							}).start();
-						} else {
-							break;
 						}
 					}
 
