@@ -601,7 +601,7 @@ public class GameScreen extends Screen {
 						recyclable.add(bullet);
 
 						if (itemManager.dropItem()) {
-							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX(), enemyShip.getPositionY());
+							ItemBox newItemBox = new ItemBox(enemyShip.getPositionX() + 6, enemyShip.getPositionY() + 1);
 							this.itemBoxes.add(newItemBox);
 							new Thread(() -> {
 								try {
