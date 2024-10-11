@@ -6,7 +6,6 @@ import entity.Ship;
 import entity.Barrier;
 
 import java.awt.*;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -15,40 +14,43 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Manages item logic
+ * Manages item drop and use.
  *
  * @author Seochan Moon
+ * @author noturavrigk
+ * @author specture258
+ * @author javadocq
+ * @author bamcasa
+ * @author D0hunLee
  *
  */
-
 public class ItemManager {
-    /** Width of current screen. */
+    /** Width of game screen. */
     private static final int WIDTH = 600;
-    /** Height of current screen. */
+    /** Height of game screen. */
     private static final int HEIGHT = 650;
-    /** Item drop probability. */
+    /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
 
-    private ItemType itemType;
+    /** Random generator. */
+    private final Random rand;
+    /** Player's ship. */
+    private final Ship ship;
+    /** Formation of enemy ships. */
+    private final EnemyShipFormation enemyShipFormation;
+    /** Set of Barriers in game screen. */
+    private final Set<Barrier> barriers;
+
+    /** Check if Time-stop is active. */
     private boolean timeStopActive;
-    /** A field variable of a boolean type to check if ghosting is on/off */
+    /** Check if Ghost is active */
     private boolean ghostActive;
-    private int shotNum;
-    private Random rand;
-    private Ship ship;
-    private EnemyShipFormation enemyShipFormation;
+    /** Check if the number of shot is max, (maximum 3). */
     private boolean isMaxShotNum;
+    /** Number of bullets that player's ship shoot. */
+    private int shotNum;
 
-    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation) {
-        this.itemType = null;
-        this.ghostActive = false;
-        this.shotNum = 1;
-        this.rand = new Random();
-        this.ship = ship;
-        this.enemyShipFormation = enemyShipFormation;
-        this.isMaxShotNum = false;
-    }
-
+    /** Types of item */
     public enum ItemType {
         Bomb,
         LineBomb,
@@ -58,23 +60,68 @@ public class ItemManager {
         MultiShot
     }
 
-    public boolean dropItem() {
-        return (rand.nextInt(100) + 1) <= ITEM_DROP_PROBABILITY;
+    /**
+     * Constructor, sets the initial conditions.
+     *
+     * @param ship Player's ship.
+     * @param enemyShipFormation Formation of enemy ships.
+     * @param barriers Set of barriers in game screen.
+     *
+     */
+    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation, Set<Barrier> barriers) {
+        this.shotNum = 1;
+        this.rand = new Random();
+        this.ship = ship;
+        this.enemyShipFormation = enemyShipFormation;
+        this.barriers = barriers;
     }
 
-    public ItemType selectItemType() {
+    /**
+     * Drop the item.
+     *
+     * @return Checks if the item was dropped.
+     */
+    public boolean dropItem() {
+        return (rand.nextInt(101)) <= ITEM_DROP_PROBABILITY;
+    }
 
+    /**
+     * Select item randomly.
+     *
+     * @return Item type.
+     */
+    private ItemType selectItemType() {
         ItemType[] itemTypes = ItemType.values();
 
-        if (!isMaxShotNum)
-            this.itemType = itemTypes[rand.nextInt(6)];
-        else
-            this.itemType = itemTypes[rand.nextInt(5)];
+        if (isMaxShotNum)
+            return itemTypes[rand.nextInt(5)];
 
-        return this.itemType;
+        return itemTypes[rand.nextInt(6)];
     }
 
-    public Entry<Integer, Integer> operateBomb() {
+    /**
+     * Uses a randomly selected item.
+     *
+     * @return If the item is offensive, returns the score to add and the number of ships destroyed.
+     *         If the item is non-offensive, returns null.
+     */
+    public Entry<Integer, Integer> useItem() {
+        return switch (selectItemType()) {
+            case Bomb -> operateBomb();
+            case LineBomb -> operateLineBomb();
+            case Barrier -> operateBarrier();
+            case Ghost -> operateGhost();
+            case TimeStop -> operateTimeStop();
+            case MultiShot -> operateMultiShot();
+        };
+    }
+
+    /**
+     * Operate Bomb item.
+     *
+     * @return The score to add and the number of ships destroyed.
+     */
+    private Entry<Integer, Integer> operateBomb() {
         int addScore = 0;
         int addShipsDestroyed = 0;
 
@@ -135,7 +182,12 @@ public class ItemManager {
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
-    public Entry<Integer, Integer> operateLineBomb() {
+    /**
+     * Operate Line-bomb item.
+     *
+     * @return The score to add and the number of ships destroyed.
+     */
+    private Entry<Integer, Integer> operateLineBomb() {
         int addScore = 0;
         int addShipsDestroyed = 0;
 
@@ -172,19 +224,30 @@ public class ItemManager {
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
-    public void operateBarrier(Set<Barrier> barriers) {
+    /**
+     * Operate Barrier item.
+     *
+     * @return null
+     */
+    private Entry<Integer, Integer> operateBarrier() {
 
         int middle = WIDTH / 2 - 39;
         int range = 200;
-        barriers.clear();
+        this.barriers.clear();
 
-        barriers.add(new Barrier(middle, HEIGHT - 100));
-        barriers.add(new Barrier(middle - range, HEIGHT - 100));
-        barriers.add(new Barrier(middle + range, HEIGHT - 100));
+        this.barriers.add(new Barrier(middle, HEIGHT - 100));
+        this.barriers.add(new Barrier(middle - range, HEIGHT - 100));
+        this.barriers.add(new Barrier(middle + range, HEIGHT - 100));
 
+        return null;
     }
 
-    public void operateGhost() {
+    /**
+     * Operate Ghost item.
+     *
+     * @return null
+     */
+    private Entry<Integer, Integer> operateGhost() {
         this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
@@ -196,9 +259,16 @@ public class ItemManager {
                 e.printStackTrace();
             }
         }).start();
+
+        return null;
     }
 
-    public void operateTimeStop() {
+    /**
+     * Operate Time-stop item.
+     *
+     * @return null
+     */
+    private Entry<Integer, Integer> operateTimeStop() {
         this.timeStopActive = true;
         new Thread(() -> {
             try {
@@ -208,26 +278,49 @@ public class ItemManager {
                 e.printStackTrace();
             }
         }).start();
+
+        return null;
     }
 
-    public void operateMultiShot() {
+    /**
+     * Operate Multi-shot item.
+     *
+     * @return null
+     */
+    private Entry<Integer, Integer> operateMultiShot() {
         if (this.shotNum < 3) {
             this.shotNum++;
-            if (shotNum == 3) {
-                isMaxShotNum = true;
+            if (this.shotNum == 3) {
+                this.isMaxShotNum = true;
             }
         }
+
+        return null;
     }
 
-    public int getShotNum() {
-        return this.shotNum;
-    }
-
+    /**
+     * Checks if Ghost is active.
+     *
+     * @return True when Ghost is active.
+     */
     public boolean isGhostActive() {
         return this.ghostActive;
     }
 
+    /**
+     * Checks if Time-stop is active.
+     *
+     * @return True when Time-stop is active.
+     */
     public boolean isTimeStopActive() {
         return this.timeStopActive;
+    }
+
+    /**
+     * Returns the number of bullets that player's ship shoot.
+     * @return Number of bullets that player's ship shoot.
+     */
+    public int getShotNum() {
+        return this.shotNum;
     }
 }
