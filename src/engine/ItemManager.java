@@ -22,7 +22,12 @@ import java.util.Set;
  */
 
 public class ItemManager {
-    private static final int ITEM_DROP_PROBABILITY = 100;
+    /** Width of current screen. */
+    private static final int WIDTH = 600;
+    /** Height of current screen. */
+    private static final int HEIGHT = 650;
+    /** Item drop probability. */
+    private static final int ITEM_DROP_PROBABILITY = 30;
 
     private ItemType itemType;
     private boolean timeStopActive;
@@ -59,46 +64,12 @@ public class ItemManager {
 
     public ItemType selectItemType() {
 
-        if (!isMaxShotNum) {
-            switch (rand.nextInt(6)) {
-                case 0:
-                    this.itemType = ItemType.Bomb;
-                    break;
-                case 1:
-                    this.itemType = ItemType.LineBomb;
-                    break;
-                case 2:
-                    this.itemType = ItemType.Barrier;
-                    break;
-                case 3:
-                    this.itemType = ItemType.Ghost;
-                    break;
-                case 4:
-                    this.itemType = ItemType.TimeStop;
-                    break;
-                case 5:
-                    this.itemType = ItemType.MultiShot;
-                    break;
-            }
-        } else {
-            switch (rand.nextInt(5)) {
-                case 0:
-                    this.itemType = ItemType.Bomb;
-                    break;
-                case 1:
-                    this.itemType = ItemType.LineBomb;
-                    break;
-                case 2:
-                    this.itemType = ItemType.Barrier;
-                    break;
-                case 3:
-                    this.itemType = ItemType.Ghost;
-                    break;
-                case 4:
-                    this.itemType = ItemType.TimeStop;
-                    break;
-            }
-        }
+        ItemType[] itemTypes = ItemType.values();
+
+        if (!isMaxShotNum)
+            this.itemType = itemTypes[rand.nextInt(6)];
+        else
+            this.itemType = itemTypes[rand.nextInt(5)];
 
         return this.itemType;
     }
@@ -203,14 +174,13 @@ public class ItemManager {
 
     public void operateBarrier(Set<Barrier> barriers) {
 
-        int screenWidth = 448;
-        int middle = screenWidth / 2 - 39;
-        int range = 150;
+        int middle = WIDTH / 2 - 39;
+        int range = 200;
         barriers.clear();
 
-        barriers.add(new Barrier(middle, 400));
-        barriers.add(new Barrier(middle - range, 400));
-        barriers.add(new Barrier(middle + range, 400));
+        barriers.add(new Barrier(middle, 550));
+        barriers.add(new Barrier(middle - range, 550));
+        barriers.add(new Barrier(middle + range, 550));
 
     }
 

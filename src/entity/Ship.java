@@ -135,33 +135,27 @@ public abstract class Ship extends Entity {
 	 */
 	public final boolean shoot(final Set<Bullet> bullets, int shotNum) {
 		if (this.shootingCooldown.checkFinished()) {
+
 			this.shootingCooldown.reset();
 			this.lastShootTime = System.currentTimeMillis();
-			if (shotNum == 1) {
-				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				return true;
-			} else if(shotNum == 2) {
-				bullets.add(BulletPool.getBullet(positionX + this.width,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				bullets.add(BulletPool.getBullet(positionX,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				return true;
-			} else if(shotNum == 3) {
-				bullets.add(BulletPool.getBullet(positionX + this.width,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				bullets.add(BulletPool.getBullet(positionX,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				bullets.add(BulletPool.getBullet(positionX + this.width / 2,
-						positionY, this.getBulletSpeed()));
-                soundManager.playSound(Sound.PLAYER_LASER);
-				return true;
+			soundManager.playSound(Sound.PLAYER_LASER);
+
+			switch (shotNum) {
+				case 1:
+					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					break;
+				case 2:
+					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
+					break;
+				case 3:
+					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
+					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					break;
 			}
+
+			return true;
 		}
 
 		return false;
