@@ -21,7 +21,7 @@ import java.util.Set;
  */
 
 public class ItemManager {
-    private static final int ITEM_DROP_PROBABILITY = 20;
+    private static final int ITEM_DROP_PROBABILITY = 100;
 
     private ItemType itemType;
     private boolean timeStopActive;

@@ -363,7 +363,7 @@ public class GameScreen extends Screen {
 			if (!itemManager.isTimeStopActive()) {
 				this.ship.update();
 				this.enemyShipFormation.update();
-				this.enemyShipFormation.shoot(this.bullets);
+				this.enemyShipFormation.shoot(this.bullets, this.level);
 			}
 
 			if (level >= 3) { //Events where vision obstructions appear start from level 3 onwards.
@@ -560,8 +560,7 @@ public class GameScreen extends Screen {
 			timer.schedule(timerTask, 3000);
 		}
 
-
-		for (Bullet bullet : this.bullets)
+		for (Bullet bullet : this.bullets) {
 			if (bullet.getSpeed() > 0) {
 				if (checkCollision(bullet, this.ship) && !this.levelFinished && !itemManager.isGhostActive()) {
 					recyclable.add(bullet);
@@ -570,13 +569,10 @@ public class GameScreen extends Screen {
 						lvdamage();
 						this.logger.info("Hit on player ship, " + this.lives
 								+ " lives remaining.");
-						}
-					}
-
-
 					}
 				}
-				if(this.barriers != null) {
+
+				if (this.barriers != null) {
 					Iterator<Barrier> barrierIterator = this.barriers.iterator();
 					while (barrierIterator.hasNext()) {
 						Barrier barrier = barrierIterator.next();
@@ -624,7 +620,7 @@ public class GameScreen extends Screen {
 						&& !this.enemyShipSpecial.isDestroyed()
 						&& checkCollision(bullet, this.enemyShipSpecial)) {
 					if (combo >= 5)
-				    this.score += enemyShipSpecial.getPointValue() * (combo / 5 + 1);
+						this.score += enemyShipSpecial.getPointValue() * (combo / 5 + 1);
 					else
 						this.score += enemyShipSpecial.getPointValue();
 					this.shipsDestroyed++;
@@ -670,30 +666,33 @@ public class GameScreen extends Screen {
 						}
 					}
 				}
-					//check the collision between the obstacle and the bullet
-					for (Block block : this.block) {
-						if (checkCollision(bullet, block)) {
-							recyclable.add(bullet);
-							break;
-						}
-					}
-				}
-			//check the collision between the obstacle and the enemyship
-			Set<Block> removableBlocks = new HashSet<>();
-			for (EnemyShip enemyShip : this.enemyShipFormation) {
-				if (!enemyShip.isDestroyed()) {
-					for (Block block : block) {
-						if (checkCollision(enemyShip, block)) {
-							removableBlocks.add(block);
-						}
+				//check the collision between the obstacle and the bullet
+				for (Block block : this.block) {
+					if (checkCollision(bullet, block)) {
+						recyclable.add(bullet);
+						break;
 					}
 				}
 			}
-			// remove crashed obstacle
-			block.removeAll(removableBlocks);
-			this.bullets.removeAll(recyclable);
-			BulletPool.recycle(recyclable);
 		}
+
+		//check the collision between the obstacle and the enemyship
+		Set<Block> removableBlocks = new HashSet<>();
+		for (EnemyShip enemyShip : this.enemyShipFormation) {
+			if (enemyShip != null && !enemyShip.isDestroyed()) {
+				for (Block block : block) {
+					if (checkCollision(enemyShip, block)) {
+						removableBlocks.add(block);
+					}
+				}
+			}
+		}
+
+		// remove crashed obstacle
+		block.removeAll(removableBlocks);
+		this.bullets.removeAll(recyclable);
+		BulletPool.recycle(recyclable);
+	}
 
 	/**
 	 * Checks if two entities are colliding.

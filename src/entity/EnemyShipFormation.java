@@ -513,4 +513,6 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	public int getPoint(){return point; }
 
 	public int getDistroyedship(){return distroyedship; }
+
+	public List<List<EnemyShip>> getEnemyShips() {return enemyShips; }
 }
