@@ -178,9 +178,9 @@ public class ItemManager {
         int range = 200;
         barriers.clear();
 
-        barriers.add(new Barrier(middle, 550));
-        barriers.add(new Barrier(middle - range, 550));
-        barriers.add(new Barrier(middle + range, 550));
+        barriers.add(new Barrier(middle, HEIGHT - 100));
+        barriers.add(new Barrier(middle - range, HEIGHT - 100));
+        barriers.add(new Barrier(middle + range, HEIGHT - 100));
 
     }
 
