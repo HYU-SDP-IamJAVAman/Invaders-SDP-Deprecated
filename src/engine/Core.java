@@ -30,7 +30,7 @@ public final class Core {
 	private static final int FPS = 60;
 
 	/** Base ship type. */
-	private static final Ship.ShipType BASE_SHIP = Ship.ShipType.StarDefender;
+	public static Ship.ShipType BASE_SHIP = Ship.ShipType.StarDefender;
 	/** Max lives. */
 	private static int MAX_LIVES;
 	/** Levels between extra life. */
