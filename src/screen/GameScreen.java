@@ -183,14 +183,14 @@ public class GameScreen extends Screen {
 		enemyShipFormation = new EnemyShipFormation(this.gameSettings, this.gameState);
 		enemyShipFormation.attach(this);
         // Appears each 10-30 seconds.
-        this.ship = ShipFactory.create(this.shipType, this.width / 2, this.height - 30);
+        this.ship = ShipFactory.create(this.shipType, this.width / 2, this.height - 70);
         ship.applyItem(wallet);
 		//Create random Spider Web.
 		int web_count = 1 + level / 3;
 		web = new ArrayList<>();
 		for(int i = 0; i < web_count; i++) {
 			double randomValue = Math.random();
-			this.web.add(new Web((int) Math.max(0, randomValue * width - 12 * 2), this.height - 30));
+			this.web.add(new Web((int) Math.max(0, randomValue * width - 12 * 2), this.height - 70));
 			this.logger.info("Spider web creation location : " + web.get(i).getPositionX());
 		}
 		//Create random Block.
@@ -396,8 +396,6 @@ public class GameScreen extends Screen {
 
 		drawManager.drawEntity(this.ship, this.ship.getPositionX(), this.ship.getPositionY());
 
-		drawManager.drawEntity(this.ship, this.ship.getPositionX(),
-				this.ship.getPositionY());
 		//draw Spider Web
 		for (int i = 0; i < web.size(); i++) {
 			drawManager.drawEntity(this.web.get(i), this.web.get(i).getPositionX(),
@@ -586,13 +584,16 @@ public class GameScreen extends Screen {
 				for (EnemyShip enemyShip : this.enemyShipFormation)
 					if (enemyShip != null && !enemyShip.isDestroyed()
 							&& checkCollision(bullet, enemyShip)) {
+						// Decide whether to destroy according to physical strength
+						this.enemyShipFormation.HealthManageDestroy(enemyShip);
+						// If the enemy doesn't die, the combo increases;
+						// if the enemy dies, both the combo and score increase.
 						if (combo >= 5)
-							this.score += enemyShip.getPointValue() * (combo / 5 + 1);
+							this.score += this.enemyShipFormation.getPoint() * (combo / 5 + 1);
 						else
-							this.score += enemyShip.getPointValue();
-						this.shipsDestroyed++;
+							this.score += this.enemyShipFormation.getPoint();
+						this.shipsDestroyed += this.enemyShipFormation.getDistroyedship();
 						this.combo++;
-						this.enemyShipFormation.destroy(enemyShip);
 						timer.cancel();
 						isExecuted = false;
 						recyclable.add(bullet);
