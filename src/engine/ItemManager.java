@@ -54,11 +54,6 @@ public class ItemManager {
     /** Cooldown variable for Time-stop */
     private Cooldown timeStop_cooldown = Core.getCooldown(0);
 
-    /** Check if Time-stop is active. */
-    private boolean timeStopActive;
-    /** Check if Ghost is active */
-    private boolean ghostActive;
-    /** Cooldown variable for Ghost */
     /** Check if the number of shot is max, (maximum 3). */
     private boolean isMaxShotNum;
     /** Number of bullets that player's ship shoot. */
@@ -316,8 +311,7 @@ public class ItemManager {
      * @return True when Ghost is active.
      */
     public boolean isGhostActive() {
-        this.ghostActive = !this.ghost_cooldown.checkFinished();
-        return this.ghostActive;
+        return !this.ghost_cooldown.checkFinished();
     }
 
     /**
@@ -326,8 +320,7 @@ public class ItemManager {
      * @return True when Time-stop is active.
      */
     public boolean isTimeStopActive() {
-        this.timeStopActive = !this.timeStop_cooldown.checkFinished();
-        return this.timeStopActive;
+        return !this.timeStop_cooldown.checkFinished();
     }
 
     /**
