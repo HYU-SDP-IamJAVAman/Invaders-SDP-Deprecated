@@ -65,36 +65,37 @@ public final class FileManager {
 	 * @throws IOException
 	 *             In case of loading problems.
 	 */
-	public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap)
-			throws IOException {
-		InputStream inputStream = null;
-		try {
-			inputStream = DrawManager.class.getClassLoader()
-					.getResourceAsStream("graphics");
-			char c;
+	public void loadSprite(final Map<SpriteType, boolean[][]> spriteMap) throws IOException {
+        try (InputStream inputStream = DrawManager.class.getClassLoader().getResourceAsStream("graphics");
+			 BufferedReader reader = inputStream != null ? new BufferedReader(new InputStreamReader(inputStream)) : null) {
 
-			// Sprite loading.
-			for (Map.Entry<SpriteType, boolean[][]> sprite : spriteMap
-					.entrySet()) {
-				for (int i = 0; i < sprite.getValue().length; i++)
-					for (int j = 0; j < sprite.getValue()[i].length; j++) {
-						do
-							c = (char) inputStream.read();
-						while (c != '0' && c != '1');
+			if (reader == null)
+				throw new IOException("Graphics file not found.");
 
-						if (c == '1')
-							sprite.getValue()[i][j] = true;
-						else
-							sprite.getValue()[i][j] = false;
-					}
-				logger.fine("Sprite " + sprite.getKey() + " loaded.");
-			}
-			if (inputStream != null)
-				inputStream.close();
-		} finally {
-			if (inputStream != null)
-				inputStream.close();
-		}
+            String line;
+
+            // Sprite loading.
+            for (Map.Entry<SpriteType, boolean[][]> sprite : spriteMap.entrySet()) {
+
+                int idx = 0;
+                do {
+					line = reader.readLine();
+
+					if (line == null)
+						throw new IOException("Sprite data not found.");
+
+				} while (line.trim().isEmpty() || line.trim().startsWith("#"));
+
+                for (int i = 0; i < sprite.getValue().length; i++) {
+                    for (int j = 0; j < sprite.getValue()[i].length; j++) {
+                        char c = line.charAt(idx++);
+                        sprite.getValue()[i][j] = c == '1';
+                    }
+                }
+
+                logger.fine("Sprite " + sprite.getKey() + " loaded.");
+            }
+        }
 	}
 
 	/**
