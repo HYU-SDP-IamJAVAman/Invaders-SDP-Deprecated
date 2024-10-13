@@ -32,9 +32,9 @@ public class ItemManager {
     private static final int HEIGHT = 650;
     /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
-    private static final int ITEM_DROP_PROBABILITY = 99;
     /** Cooldown of Timestop */
     private static final int TIMESTOP_COOLDOWN = 4000;
+
 
     /** Random generator. */
     private final Random rand;
@@ -49,6 +49,7 @@ public class ItemManager {
 
     /** Check if Time-stop is active. */
     private boolean timeStopActive;
+    /** Cooldown variable for Timestop */
     private Cooldown timestop_cooldown = Core.getCooldown(0);
     /** Check if Ghost is active */
     private boolean ghostActive;
@@ -82,6 +83,7 @@ public class ItemManager {
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
+        this.timeStopActive = false;
     }
 
     /**
@@ -284,6 +286,7 @@ public class ItemManager {
         timestop_cooldown.reset();
 
         return null;
+    }
 
     /**
      * Operate Multi-shot item.
