@@ -32,7 +32,8 @@ public class ItemManager {
     private static final int HEIGHT = 650;
     /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
-
+    /** Cooldown of Ghost */
+    private static final int GHOST_COOLDOWN = 3000;
     /** Random generator. */
     private final Random rand;
     /** Player's ship. */
@@ -48,8 +49,6 @@ public class ItemManager {
     private boolean timeStopActive;
     /** Check if Ghost is active */
     private boolean ghostActive;
-    /** Cooldown of Ghost */
-    private static final int GHOST_COOLDOWN = 3000;
     /** Cooldown variable for Ghost */
     private Cooldown ghost_cooldown = Core.getCooldown(0);
     /** Check if the number of shot is max, (maximum 3). */
@@ -85,7 +84,6 @@ public class ItemManager {
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
-        this.ghostActive = false;
     }
 
     /**
@@ -270,6 +268,7 @@ public class ItemManager {
      */
     private Entry<Integer, Integer> operateGhost() {
         this.ship.setColor(Color.DARK_GRAY);
+        soundManager.playSound(Sound.ITEM_GHOST);
         ghost_cooldown = Core.getCooldown(GHOST_COOLDOWN);
         ghost_cooldown.reset();
 
