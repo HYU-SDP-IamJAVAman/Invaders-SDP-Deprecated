@@ -53,6 +53,9 @@ public class ItemManager {
     /** Number of bullets that player's ship shoot. */
     private int shotNum;
 
+    /** Singleton instance of SoundManager */
+    private final SoundManager soundManager = SoundManager.getInstance();
+
     /** Types of item */
     public enum ItemType {
         Bomb,
@@ -138,6 +141,8 @@ public class ItemManager {
         int maxCnt = -1;
         int maxRow = 0, maxCol = 0;
 
+        soundManager.playSound(Sound.ITEM_BOMB);
+
         for (int i = 0; i <= enemyShipsSize - 3; i++) {
 
             List<EnemyShip> rowShips = enemyships.get(i);
@@ -203,6 +208,8 @@ public class ItemManager {
         int targetRow = -1;
         int maxCnt = -1;
 
+        soundManager.playSound(Sound.ITEM_BOMB);
+
         for (int i = 0; i < enemyships.size(); i++) {
             int aliveCnt = 0;
             for (int j = 0; j < enemyships.get(i).size(); j++) {
@@ -246,6 +253,8 @@ public class ItemManager {
         this.barriers.add(new Barrier(middle - range, HEIGHT - 100));
         this.barriers.add(new Barrier(middle + range, HEIGHT - 100));
 
+        soundManager.playSound(Sound.ITEM_BARRIER_ON);
+
         return null;
     }
 
@@ -257,6 +266,7 @@ public class ItemManager {
     private Entry<Integer, Integer> operateGhost() {
         this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
+        soundManager.playSound(Sound.ITEM_GHOST);
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
@@ -277,10 +287,12 @@ public class ItemManager {
      */
     private Entry<Integer, Integer> operateTimeStop() {
         this.timeStopActive = true;
+        soundManager.playSound(Sound.ITEM_TIMESTOP_ON);
         new Thread(() -> {
             try {
                 Thread.sleep(4000);
                 this.timeStopActive = false;
+                soundManager.playSound(Sound.ITEM_TIMESTOP_OFF);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

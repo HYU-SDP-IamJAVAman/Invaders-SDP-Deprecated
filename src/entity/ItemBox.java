@@ -1,6 +1,8 @@
 package entity;
 
 import engine.DrawManager.SpriteType;
+import engine.Sound;
+import engine.SoundManager;
 
 import java.awt.*;
 
@@ -19,6 +21,9 @@ public class ItemBox extends Entity {
     /** Check if it was dropped right now. */
     private boolean droppedRightNow;
 
+    /** Initialize singleton instance of SoundManager and return that */
+    private static final SoundManager soundManager = SoundManager.getInstance();
+
     /**
      * Constructor, establishes the entity's generic properties.
      *
@@ -29,6 +34,7 @@ public class ItemBox extends Entity {
         super(positionX, positionY, 7 * 2, 7 * 2, Color.YELLOW);
         this.spriteType = SpriteType.ItemBox;
         this.droppedRightNow = true;
+        soundManager.playSound(Sound.ITEM_SPAWN);
 
         // Prevents being hit by bullets immediately after being created.
         new Thread(() -> {

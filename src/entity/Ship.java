@@ -138,20 +138,22 @@ public abstract class Ship extends Entity {
 
 			this.shootingCooldown.reset();
 			this.lastShootTime = System.currentTimeMillis();
-			soundManager.playSound(Sound.PLAYER_LASER);
 
 			switch (shotNum) {
 				case 1:
 					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					soundManager.playSound(Sound.PLAYER_LASER);
 					break;
 				case 2:
 					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
 					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
+					soundManager.playSound(Sound.ITEM_2SHOT);
 					break;
 				case 3:
 					bullets.add(BulletPool.getBullet(positionX + this.width, positionY, this.getBulletSpeed()));
 					bullets.add(BulletPool.getBullet(positionX, positionY, this.getBulletSpeed()));
 					bullets.add(BulletPool.getBullet(positionX + this.width / 2, positionY, this.getBulletSpeed()));
+					soundManager.playSound(Sound.ITEM_3SHOT);
 					break;
 			}
 

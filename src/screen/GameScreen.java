@@ -235,7 +235,9 @@ public class GameScreen extends Screen {
 		this.gameStartTime = System.currentTimeMillis();
 		this.inputDelay = Core.getCooldown(INPUT_DELAY);
 		this.inputDelay.reset();
-        soundManager.stopSound(Sound.BGM_MAIN);
+
+		if (soundManager.isSoundPlaying(Sound.BGM_MAIN))
+        	soundManager.stopSound(Sound.BGM_MAIN);
 		soundManager.playSound(Sound.COUNTDOWN);
 
 		switch (this.level) {
@@ -640,6 +642,7 @@ public class GameScreen extends Screen {
 				for (Block block : this.block) {
 					if (checkCollision(bullet, block)) {
 						recyclable.add(bullet);
+                        soundManager.playSound(Sound.BULLET_BLOCKING);
 						break;
 					}
 				}
