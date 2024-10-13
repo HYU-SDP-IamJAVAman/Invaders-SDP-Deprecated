@@ -34,6 +34,9 @@ public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 30;
     /** Cooldown of Ghost */
     private static final int GHOST_COOLDOWN = 3000;
+    /** Cooldown of Time-stop */
+    private static final int TIMESTOP_COOLDOWN = 4000;
+
     /** Random generator. */
     private final Random rand;
     /** Player's ship. */
@@ -44,20 +47,22 @@ public class ItemManager {
     private final Set<Barrier> barriers;
     /** Application logger. */
     private final Logger logger;
+    /** Singleton instance of SoundManager */
+    private final SoundManager soundManager = SoundManager.getInstance();
+    /** Cooldown variable for Ghost */
+    private Cooldown ghost_cooldown = Core.getCooldown(0);
+    /** Cooldown variable for Time-stop */
+    private Cooldown timeStop_cooldown = Core.getCooldown(0);
 
     /** Check if Time-stop is active. */
     private boolean timeStopActive;
     /** Check if Ghost is active */
     private boolean ghostActive;
     /** Cooldown variable for Ghost */
-    private Cooldown ghost_cooldown = Core.getCooldown(0);
     /** Check if the number of shot is max, (maximum 3). */
     private boolean isMaxShotNum;
     /** Number of bullets that player's ship shoot. */
     private int shotNum;
-
-    /** Singleton instance of SoundManager */
-    private final SoundManager soundManager = SoundManager.getInstance();
 
     /** Types of item */
     public enum ItemType {
@@ -135,6 +140,8 @@ public class ItemManager {
      * @return The score to add and the number of ships destroyed.
      */
     private Entry<Integer, Integer> operateBomb() {
+        this.soundManager.playSound(Sound.ITEM_BOMB);
+
         int addScore = 0;
         int addShipsDestroyed = 0;
 
@@ -143,8 +150,6 @@ public class ItemManager {
 
         int maxCnt = -1;
         int maxRow = 0, maxCol = 0;
-
-        soundManager.playSound(Sound.ITEM_BOMB);
 
         for (int i = 0; i <= enemyShipsSize - 3; i++) {
 
@@ -203,6 +208,8 @@ public class ItemManager {
      * @return The score to add and the number of ships destroyed.
      */
     private Entry<Integer, Integer> operateLineBomb() {
+        this.soundManager.playSound(Sound.ITEM_BOMB);
+
         int addScore = 0;
         int addShipsDestroyed = 0;
 
@@ -210,8 +217,6 @@ public class ItemManager {
 
         int targetRow = -1;
         int maxCnt = -1;
-
-        soundManager.playSound(Sound.ITEM_BOMB);
 
         for (int i = 0; i < enemyships.size(); i++) {
             int aliveCnt = 0;
@@ -247,6 +252,7 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateBarrier() {
+        this.soundManager.playSound(Sound.ITEM_BARRIER_ON);
 
         int middle = WIDTH / 2 - 39;
         int range = 200;
@@ -255,8 +261,6 @@ public class ItemManager {
         this.barriers.add(new Barrier(middle, HEIGHT - 100));
         this.barriers.add(new Barrier(middle - range, HEIGHT - 100));
         this.barriers.add(new Barrier(middle + range, HEIGHT - 100));
-
-        soundManager.playSound(Sound.ITEM_BARRIER_ON);
 
         return null;
     }
@@ -267,10 +271,11 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateGhost() {
+        this.soundManager.playSound(Sound.ITEM_GHOST);
+
         this.ship.setColor(Color.DARK_GRAY);
-        soundManager.playSound(Sound.ITEM_GHOST);
-        ghost_cooldown = Core.getCooldown(GHOST_COOLDOWN);
-        ghost_cooldown.reset();
+        this.ghost_cooldown = Core.getCooldown(GHOST_COOLDOWN);
+        this.ghost_cooldown.reset();
 
         return null;
     }
@@ -281,17 +286,10 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateTimeStop() {
-        this.timeStopActive = true;
-        soundManager.playSound(Sound.ITEM_TIMESTOP_ON);
-        new Thread(() -> {
-            try {
-                Thread.sleep(4000);
-                this.timeStopActive = false;
-                soundManager.playSound(Sound.ITEM_TIMESTOP_OFF);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        this.soundManager.playSound(Sound.ITEM_TIMESTOP_ON);
+
+        this.timeStop_cooldown = Core.getCooldown(TIMESTOP_COOLDOWN);
+        this.timeStop_cooldown.reset();
 
         return null;
     }
@@ -328,6 +326,7 @@ public class ItemManager {
      * @return True when Time-stop is active.
      */
     public boolean isTimeStopActive() {
+        this.timeStopActive = !this.timeStop_cooldown.checkFinished();
         return this.timeStopActive;
     }
 
