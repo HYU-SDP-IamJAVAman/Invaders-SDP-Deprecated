@@ -4,43 +4,58 @@ import java.awt.event.KeyEvent;
 
 import engine.Cooldown;
 import engine.Core;
+import engine.Sound;
+import engine.SoundManager;
+import entity.Wallet;
+
 
 /**
  * Implements the title screen.
- * 
+ *
  * @author <a href="mailto:RobertoIA1987@gmail.com">Roberto Izquierdo Amo</a>
- * 
+ *
  */
 public class TitleScreen extends Screen {
 
 	/** Milliseconds between changes in user selection. */
 	private static final int SELECTION_TIME = 200;
-	
+
 	/** Time between changes in user selection. */
 	private Cooldown selectionCooldown;
 
+	/** Singleton instance of SoundManager */
+	private final SoundManager soundManager = SoundManager.getInstance();
+
+	private Wallet wallet;
+
 	/**
 	 * Constructor, establishes the properties of the screen.
-	 * 
+	 *
 	 * @param width
 	 *            Screen width.
 	 * @param height
 	 *            Screen height.
 	 * @param fps
 	 *            Frames per second, frame rate at which the game is run.
+	 * @param wallet
+	 * 			  Player's wallet
 	 */
-	public TitleScreen(final int width, final int height, final int fps) {
+	public TitleScreen(final int width, final int height, final int fps, final Wallet wallet) {
 		super(width, height, fps);
 
 		// Defaults to play.
-		this.returnCode = 2;
+		if (!soundManager.isSoundPlaying(Sound.BGM_MAIN))
+			soundManager.loopSound(Sound.BGM_MAIN);
+
+		this.returnCode = 6;
 		this.selectionCooldown = Core.getCooldown(SELECTION_TIME);
 		this.selectionCooldown.reset();
+		this.wallet = wallet;
 	}
 
 	/**
 	 * Starts the action.
-	 * 
+	 *
 	 * @return Next screen code.
 	 */
 	public final int run() {
@@ -62,14 +77,18 @@ public class TitleScreen extends Screen {
 					|| inputManager.isKeyDown(KeyEvent.VK_W)) {
 				previousMenuItem();
 				this.selectionCooldown.reset();
+				soundManager.playSound(Sound.MENU_MOVE);
 			}
 			if (inputManager.isKeyDown(KeyEvent.VK_DOWN)
 					|| inputManager.isKeyDown(KeyEvent.VK_S)) {
 				nextMenuItem();
 				this.selectionCooldown.reset();
+				soundManager.playSound(Sound.MENU_MOVE);
 			}
-			if (inputManager.isKeyDown(KeyEvent.VK_SPACE))
+			if (inputManager.isKeyDown(KeyEvent.VK_SPACE)){
 				this.isRunning = false;
+				soundManager.playSound(Sound.MENU_CLICK);
+			}
 		}
 	}
 
@@ -77,10 +96,15 @@ public class TitleScreen extends Screen {
 	 * Shifts the focus to the next menu item.
 	 */
 	private void nextMenuItem() {
-		if (this.returnCode == 3)
+	/*
+	  TODO: Refactor returnCode & Core Logic
+	 */
+		if (this.returnCode == 5)
 			this.returnCode = 0;
 		else if (this.returnCode == 0)
-			this.returnCode = 2;
+			this.returnCode = 6;
+		else if (this.returnCode == 6)
+			this.returnCode = 3;
 		else
 			this.returnCode++;
 	}
@@ -89,10 +113,15 @@ public class TitleScreen extends Screen {
 	 * Shifts the focus to the previous menu item.
 	 */
 	private void previousMenuItem() {
+	/*
+	  TODO: Refactor returnCode & Core Logic
+	 */
 		if (this.returnCode == 0)
-			this.returnCode = 3;
-		else if (this.returnCode == 2)
+			this.returnCode = 5;
+		else if (this.returnCode == 6)
 			this.returnCode = 0;
+		else if (this.returnCode == 3)
+			this.returnCode = 6;
 		else
 			this.returnCode--;
 	}
@@ -104,7 +133,7 @@ public class TitleScreen extends Screen {
 		drawManager.initDrawing(this);
 
 		drawManager.drawTitle(this);
-		drawManager.drawMenu(this, this.returnCode);
+		drawManager.drawMenu(this, this.returnCode, wallet.getCoin());
 
 		drawManager.completeDrawing(this);
 	}

@@ -1,7 +1,7 @@
 #################
 ## Eclipse
 #################
-
+*.iml
 *.pydevproject
 .project
 .metadata
@@ -168,6 +168,6 @@ pip-log.txt
 /out/
 
 log*
-*.ttf
 .checkstyle
 .idea/
+*.iml
