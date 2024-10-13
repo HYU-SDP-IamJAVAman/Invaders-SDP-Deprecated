@@ -18,9 +18,11 @@ import java.util.AbstractMap.SimpleEntry;
 
 public class ItemManager {
     private static final int ITEM_DROP_PROBABILITY = 99;
+    private static final int TIMESTOP_COOLDOWN = 4000;
 
     private ItemType itemType;
     private boolean timeStopActive;
+    private Cooldown timestop_cooldown = Core.getCooldown(0);
     private boolean ghostActive;
     private int shotNum;
     private Random rand;
@@ -30,12 +32,13 @@ public class ItemManager {
 
     public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation) {
         this.itemType = null;
-        this.GhostActive = false;
+        this.ghostActive = false;
         this.shotNum = 1;
         this.rand = new Random();
         this.ship = ship;
         this.enemyShipFormation = enemyShipFormation;
         this.isMaxShotNum = false;
+        this.timeStopActive = false;
     }
 
     public enum ItemType {
@@ -136,12 +139,12 @@ public class ItemManager {
     public void operateBarrier() {}
 
     public void operateGhost() {
-        this.GhostActive = true;
+        this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
-                this.GhostActive = false;
+                this.ghostActive = false;
                 this.ship.setColor(Color.GREEN);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -150,15 +153,8 @@ public class ItemManager {
     }
 
     public void operateTimeStop() {
-        this.timeStopActive = true;
-        new Thread(() -> {
-            try {
-                Thread.sleep(4000);
-                this.timeStopActive = false;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        timestop_cooldown = Core.getCooldown(TIMESTOP_COOLDOWN);
+        timestop_cooldown.reset();
     }
 
     public void operateMultiShot() {
@@ -175,10 +171,11 @@ public class ItemManager {
     }
 
     public boolean isGhostActive() {
-        return GhostActive;
+        return ghostActive;
     }
 
     public boolean isTimeStopActive() {
+        this.timeStopActive = !this.timestop_cooldown.checkFinished();
         return timeStopActive;
     }
 }
