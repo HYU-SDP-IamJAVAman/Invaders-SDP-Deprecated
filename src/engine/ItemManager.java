@@ -32,8 +32,10 @@ public class ItemManager {
     private static final int HEIGHT = 650;
     /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
-    /** Cooldown of Ghost */
-    private static final int GHOST_COOLDOWN = 3000;
+    /** Cooldown of Timestop */
+    private static final int TIMESTOP_COOLDOWN = 4000;
+
+
     /** Random generator. */
     private final Random rand;
     /** Player's ship. */
@@ -47,17 +49,14 @@ public class ItemManager {
 
     /** Check if Time-stop is active. */
     private boolean timeStopActive;
+    /** Cooldown variable for Timestop */
+    private Cooldown timestop_cooldown = Core.getCooldown(0);
     /** Check if Ghost is active */
     private boolean ghostActive;
-    /** Cooldown variable for Ghost */
-    private Cooldown ghost_cooldown = Core.getCooldown(0);
     /** Check if the number of shot is max, (maximum 3). */
     private boolean isMaxShotNum;
     /** Number of bullets that player's ship shoot. */
     private int shotNum;
-
-    /** Singleton instance of SoundManager */
-    private final SoundManager soundManager = SoundManager.getInstance();
 
     /** Types of item */
     public enum ItemType {
@@ -84,6 +83,7 @@ public class ItemManager {
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
+        this.timeStopActive = false;
     }
 
     /**
@@ -143,8 +143,6 @@ public class ItemManager {
 
         int maxCnt = -1;
         int maxRow = 0, maxCol = 0;
-
-        soundManager.playSound(Sound.ITEM_BOMB);
 
         for (int i = 0; i <= enemyShipsSize - 3; i++) {
 
@@ -211,8 +209,6 @@ public class ItemManager {
         int targetRow = -1;
         int maxCnt = -1;
 
-        soundManager.playSound(Sound.ITEM_BOMB);
-
         for (int i = 0; i < enemyships.size(); i++) {
             int aliveCnt = 0;
             for (int j = 0; j < enemyships.get(i).size(); j++) {
@@ -256,8 +252,6 @@ public class ItemManager {
         this.barriers.add(new Barrier(middle - range, HEIGHT - 100));
         this.barriers.add(new Barrier(middle + range, HEIGHT - 100));
 
-        soundManager.playSound(Sound.ITEM_BARRIER_ON);
-
         return null;
     }
 
@@ -267,10 +261,17 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateGhost() {
+        this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
-        soundManager.playSound(Sound.ITEM_GHOST);
-        ghost_cooldown = Core.getCooldown(GHOST_COOLDOWN);
-        ghost_cooldown.reset();
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                this.ghostActive = false;
+                this.ship.setColor(Color.GREEN);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
 
         return null;
     }
@@ -281,17 +282,8 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateTimeStop() {
-        this.timeStopActive = true;
-        soundManager.playSound(Sound.ITEM_TIMESTOP_ON);
-        new Thread(() -> {
-            try {
-                Thread.sleep(4000);
-                this.timeStopActive = false;
-                soundManager.playSound(Sound.ITEM_TIMESTOP_OFF);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        timestop_cooldown = Core.getCooldown(TIMESTOP_COOLDOWN);
+        timestop_cooldown.reset();
 
         return null;
     }
@@ -318,7 +310,6 @@ public class ItemManager {
      * @return True when Ghost is active.
      */
     public boolean isGhostActive() {
-        this.ghostActive = !this.ghost_cooldown.checkFinished();
         return this.ghostActive;
     }
 
@@ -328,7 +319,8 @@ public class ItemManager {
      * @return True when Time-stop is active.
      */
     public boolean isTimeStopActive() {
-        return this.timeStopActive;
+        this.timeStopActive = !this.timestop_cooldown.checkFinished();
+        return timeStopActive;
     }
 
     /**
