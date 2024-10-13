@@ -278,12 +278,15 @@ public class GameScreen extends Screen {
 
 			/*Elapsed Time Update*/
 			long currentTime = System.currentTimeMillis();
+
 			if (this.prevTime != null)
 				this.elapsedTime += (int) (currentTime - this.prevTime);
+
 			this.prevTime = (int) currentTime;
-			if(!itemManager.isGhostActive()) {
+
+			if(!itemManager.isGhostActive())
 				this.ship.setColor(Color.GREEN);
-			}
+
 			if (!this.ship.isDestroyed()) {
 				boolean moveRight = inputManager.isKeyDown(KeyEvent.VK_RIGHT)
 						|| inputManager.isKeyDown(KeyEvent.VK_D);
