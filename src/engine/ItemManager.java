@@ -48,6 +48,10 @@ public class ItemManager {
     private boolean timeStopActive;
     /** Check if Ghost is active */
     private boolean ghostActive;
+    /** Cooldown of Ghost */
+    private static final int GHOST_COOLDOWN = 3000;
+    /** Cooldown variable for Ghost */
+    private Cooldown ghost_cooldown = Core.getCooldown(0);
     /** Check if the number of shot is max, (maximum 3). */
     private boolean isMaxShotNum;
     /** Number of bullets that player's ship shoot. */
@@ -81,6 +85,7 @@ public class ItemManager {
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
+        this.ghostActive = false;
     }
 
     /**
@@ -264,18 +269,9 @@ public class ItemManager {
      * @return null
      */
     private Entry<Integer, Integer> operateGhost() {
-        this.ghostActive = true;
         this.ship.setColor(Color.DARK_GRAY);
-        soundManager.playSound(Sound.ITEM_GHOST);
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000);
-                this.ghostActive = false;
-                this.ship.setColor(Color.GREEN);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        ghost_cooldown = Core.getCooldown(GHOST_COOLDOWN);
+        ghost_cooldown.reset();
 
         return null;
     }
@@ -323,6 +319,7 @@ public class ItemManager {
      * @return True when Ghost is active.
      */
     public boolean isGhostActive() {
+        this.ghostActive = !this.ghost_cooldown.checkFinished();
         return this.ghostActive;
     }
 
