@@ -212,34 +212,22 @@ public class ItemManager {
 
         int destroyRow = -1;
 
-        for (int i = 0; i < enemyShips.size(); i++) {
-            for (int j = 0; j < enemyShips.get(i).size(); j++) {
-                if(enemyShips.get(i).get(j) != null){
-                    destroyRow = Math.max(destroyRow, j);
-                }
+        for (List<EnemyShip> column : enemyShips) {
+            for (int i = 0; i < column.size(); i++) {
+                if (column.get(i) != null && !column.get(i).isDestroyed())
+                    destroyRow = Math.max(destroyRow, i);
             }
         }
 
-        if(destroyRow != -1){
-            List<EnemyShip> destroyShipList = new ArrayList<>();
-
-            for(int i = 0; i< enemyShips.size() ; i++){
-                for (int j = 0; j < enemyShips.get(i).size(); j++) {
-                    if(enemyShips.get(i).get(j) != null && j == destroyRow){
-                        destroyShipList.add(enemyShips.get(i).get(j));
-                    }
-                }
-            }
-
-            for (EnemyShip destroyedShip : destroyShipList) {
-                if (!destroyedShip.isDestroyed()) {
-                    addScore += destroyedShip.getPointValue();
+        if (destroyRow != -1) {
+            for (List<EnemyShip> column : enemyShips) {
+                if (column.get(destroyRow) != null && !column.get(destroyRow).isDestroyed()) {
+                    addScore += column.get(destroyRow).getPointValue();
                     addShipsDestroyed++;
-                    enemyShipFormation.destroy(destroyedShip);
+                    enemyShipFormation.destroy(column.get(destroyRow));
                 }
             }
         }
-
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
