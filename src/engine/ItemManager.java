@@ -208,29 +208,31 @@ public class ItemManager {
         int addScore = 0;
         int addShipsDestroyed = 0;
 
-        List<List<EnemyShip>> enemyships = this.enemyShipFormation.getEnemyShips();
+        List<List<EnemyShip>> enemyShips = this.enemyShipFormation.getEnemyShips();
 
-        int targetRow = -1;
-        int maxCnt = -1;
+        int destroyRow = -1;
 
-        for (int i = 0; i < enemyships.size(); i++) {
-            int aliveCnt = 0;
-            for (int j = 0; j < enemyships.get(i).size(); j++) {
-                if (enemyships.get(i).get(j) != null && !enemyships.get(i).get(j).isDestroyed()) {
-                    aliveCnt++;
+        for (int i = 0; i < enemyShips.size(); i++) {
+            for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                if(enemyShips.get(i).get(j) != null){
+                    destroyRow = Math.max(destroyRow, j);
                 }
-            }
-
-            if (aliveCnt > maxCnt) {
-                maxCnt = aliveCnt;
-                targetRow = i;
             }
         }
 
-        if (targetRow != -1) {
-            List<EnemyShip> destroyList = new ArrayList<>(enemyships.get(targetRow));
-            for (EnemyShip destroyedShip : destroyList) {
-                if (destroyedShip != null && !destroyedShip.isDestroyed()) {
+        if(destroyRow != -1){
+            List<EnemyShip> destroyShipList = new ArrayList<>();
+
+            for(int i = 0; i< enemyShips.size() ; i++){
+                for (int j = 0; j < enemyShips.get(i).size(); j++) {
+                    if(enemyShips.get(i).get(j) != null && j == destroyRow){
+                        destroyShipList.add(enemyShips.get(i).get(j));
+                    }
+                }
+            }
+
+            for (EnemyShip destroyedShip : destroyShipList) {
+                if (!destroyedShip.isDestroyed()) {
                     addScore += destroyedShip.getPointValue();
                     addShipsDestroyed++;
                     enemyShipFormation.destroy(destroyedShip);
