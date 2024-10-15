@@ -27,9 +27,9 @@ import java.util.logging.Logger;
  */
 public class ItemManager {
     /** Width of game screen. */
-    private static final int WIDTH = 600;
+    private static int WIDTH = 600;
     /** Height of game screen. */
-    private static final int HEIGHT = 650;
+    private static int HEIGHT = 650;
     /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
     /** Cooldown of Ghost */
@@ -77,13 +77,15 @@ public class ItemManager {
      * @param barriers Set of barriers in game screen.
      *
      */
-    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation, Set<Barrier> barriers) {
+    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation, Set<Barrier> barriers, int HEIGHT, int WIDTH) {
         this.shotNum = 1;
         this.rand = new Random();
         this.ship = ship;
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
+        this.HEIGHT = HEIGHT;
+        this.WIDTH = WIDTH;
     }
 
     /**
@@ -242,11 +244,14 @@ public class ItemManager {
         int middle = WIDTH / 2 - 39;
         int range = 200;
         this.barriers.clear();
+        int BarrierY = HEIGHT - 100;
 
-        this.barriers.add(new Barrier(middle, HEIGHT - 100));
-        this.barriers.add(new Barrier(middle - range, HEIGHT - 100));
-        this.barriers.add(new Barrier(middle + range, HEIGHT - 100));
-
+        this.barriers.add(new Barrier(middle, BarrierY));
+        this.barriers.add(new Barrier(middle - range, BarrierY));
+        this.barriers.add(new Barrier(middle + range, BarrierY));
+        logger.info("Barrier created at positions: (" + middle + ", " + (BarrierY) + "), ("
+                + (middle - range) + ", " + (BarrierY) + "), ("
+                + (middle + range) + ", " + (BarrierY) + ")");
         return null;
     }
 
