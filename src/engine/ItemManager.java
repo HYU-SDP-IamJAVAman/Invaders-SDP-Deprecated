@@ -27,9 +27,9 @@ import java.util.logging.Logger;
  */
 public class ItemManager {
     /** Width of game screen. */
-    private static int WIDTH = 600;
+    private int WIDTH = 600;
     /** Height of game screen. */
-    private static int HEIGHT = 650;
+    private int HEIGHT = 650;
     /** Item drop probability, (1 ~ 100). */
     private static final int ITEM_DROP_PROBABILITY = 30;
     /** Cooldown of Ghost */
@@ -244,7 +244,7 @@ public class ItemManager {
         int middle = WIDTH / 2 - 39;
         int range = 200;
         this.barriers.clear();
-        int BarrierY = HEIGHT - 100;
+        int BarrierY = HEIGHT - 70;
 
         this.barriers.add(new Barrier(middle, BarrierY));
         this.barriers.add(new Barrier(middle - range, BarrierY));
