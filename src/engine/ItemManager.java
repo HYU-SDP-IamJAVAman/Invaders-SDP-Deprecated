@@ -194,6 +194,7 @@ public class ItemManager {
             }
         }
 
+
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
@@ -228,6 +229,8 @@ public class ItemManager {
                 }
             }
         }
+
+
         return new SimpleEntry<>(addScore, addShipsDestroyed);
     }
 
