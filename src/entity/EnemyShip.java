@@ -41,7 +41,7 @@ public class EnemyShip extends Entity {
 	/** Singleton instance of SoundManager */
 	private final SoundManager soundManager = SoundManager.getInstance();
 
-    private int health;
+	private int health;
 	/**
 	 * Constructor, establishes the ship's properties.
 	 * 
@@ -221,6 +221,9 @@ public class EnemyShip extends Entity {
 
 	public int getHealth(){return this.health; }  //Receive enemy ship health
 
+	public void setHealth(int health) {
+		this.health = health;
+	}
 
 	/**
 	 * Checks if the ship has been destroyed.

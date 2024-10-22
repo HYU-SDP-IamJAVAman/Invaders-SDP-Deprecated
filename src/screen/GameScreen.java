@@ -827,7 +827,7 @@ public class GameScreen extends Screen implements Callable<GameState> {
 						isExecuted = false;
 						recyclable.add(bullet);
 
-						if (itemManager.dropItem()) {
+						if (enemyShip.getHealth() < 0 && itemManager.dropItem()) {
 							this.itemBoxes.add(new ItemBox(enemyShip.getPositionX() + 6, enemyShip.getPositionY() + 1, balance));
 							logger.info("Item box dropped");
 						}

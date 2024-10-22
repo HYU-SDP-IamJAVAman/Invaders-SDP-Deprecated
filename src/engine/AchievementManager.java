@@ -75,7 +75,7 @@ public class AchievementManager {
         } else if (highMaxCombo < 25) {
             maxComboGoal = 25;
         }
-        int rewardIndex = highMaxCombo / 5 - 1;
+        int rewardIndex = highMaxCombo / 5 - 1 <= 9 ? 0 : highMaxCombo / 5 - 1;
         highMaxCombo = maxCombo;
         if (highMaxCombo < maxComboGoal) {
             achievement.setHighMaxcombo(highMaxCombo);

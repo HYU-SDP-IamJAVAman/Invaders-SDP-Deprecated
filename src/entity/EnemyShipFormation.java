@@ -454,6 +454,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 								+ this.enemyShips.indexOf(column) + "," + i + ")");
 						point = destroyedShip.getPointValue();
 						distroyedship = 1;
+						destroyedShip.setHealth(destroyedShip.getHealth() - 1);
 					}else{
 						point = 0;
 						distroyedship = 0;
