@@ -209,7 +209,7 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	/**
 	 * Updates the position of the ships.
 	 */
-	public final void update() {
+	public final void update(boolean isTimestopActive) {
 		if(this.shootingCooldown == null) {
 			this.shootingCooldown = Core.getVariableCooldown(shootingInterval,
 					shootingVariance);
@@ -273,6 +273,13 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 				movementX = -X_SPEED;
 			else
 				movementY = Y_SPEED;
+
+
+			// Stop the movements of enemy ships when 'isTimeStopActive' is true.
+			if (isTimestopActive) {
+				movementX = 0;
+				movementY = 0;
+			}
 
 			positionX += movementX;
 			positionY += movementY;
@@ -368,10 +375,16 @@ public class EnemyShipFormation implements Iterable<EnemyShip> {
 	 * @param bullets
 	 *            Bullets set to add the bullet being shot.
 	 */
-	public final void shoot(final Set<Bullet> bullets, int level, float balance) {
+	public final void shoot(final Set<Bullet> bullets, int level, boolean isTimeStopActive, float balance) {
 		// Increasing the number of projectiles per level 3 (levels 1 to 3, 4 to 6, 2, 7 to 9, etc.)
 		int numberOfShooters = Math.min((level / 3) + 1, this.shooters.size());
 		int numberOfBullets = (level / 3) + 1;
+
+		// Stop the attacks of enemy ships when 'isTimeStopActive' is true.
+		if (isTimeStopActive) {
+			numberOfShooters = 0;
+			numberOfBullets = 0;
+		}
 
 		// Randomly select enemy to fire in proportion to the level
 		List<EnemyShip> selectedShooters = new ArrayList<>();

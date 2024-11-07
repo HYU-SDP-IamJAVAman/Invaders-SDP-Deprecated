@@ -80,15 +80,15 @@ public class ItemManager {
      * @param balance 1p -1.0, 2p 1.0, both 0.0
      *
      */
-    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation, Set<Barrier> barriers, int WIDTH, int HEIGHT, float balance) {
+    public ItemManager(Ship ship, EnemyShipFormation enemyShipFormation, Set<Barrier> barriers, int width, int height, float balance) {
         this.shotNum = 1;
         this.rand = new Random();
         this.ship = ship;
         this.enemyShipFormation = enemyShipFormation;
         this.barriers = barriers;
         this.logger = Core.getLogger();
-        this.WIDTH = WIDTH;
-        this.HEIGHT = HEIGHT;
+        this.WIDTH = width;
+        this.HEIGHT = height;
         this.balance = balance;
     }
 

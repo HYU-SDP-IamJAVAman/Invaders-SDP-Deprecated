@@ -461,13 +461,9 @@ public class GameScreen extends Screen implements Callable<GameState> {
 				this.logger.info("The special ship has escaped");
 			}
 
-			this.ship.update();
-
-			// If Time-stop is active, Stop updating enemy ships' move and their shoots.
-			if (!itemManager.isTimeStopActive()) {
-				this.enemyShipFormation.update();
-				this.enemyShipFormation.shoot(this.bullets, this.level, balance);
-			}
+			// Stops the movements and attacks of enemy ships when 'isTimeStopActive' is true.
+			this.enemyShipFormation.update(itemManager.isTimeStopActive());
+			this.enemyShipFormation.shoot(this.bullets, this.level, itemManager.isTimeStopActive(), balance);
 
 			if (level >= 3) { //Events where vision obstructions appear start from level 3 onwards.
 				handleBlockerAppearance();
